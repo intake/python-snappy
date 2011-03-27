@@ -121,7 +121,7 @@ snappy__uncompress(PyObject *self, PyObject *args)
     if (status > 0)
         return Py_BuildValue("s#", uncompressed, uncomp_size);
 
-    PyErr_SetString(SnappyError, "An error ocurred while uncompressing string");
+    PyErr_SetString(SnappyError, "uncompress: an error ocurred while uncompressing the string");
     return NULL;
 }
 
