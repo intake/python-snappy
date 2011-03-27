@@ -1,0 +1,17 @@
+python-snappy
+=============
+
+Python library for the snappy compression library from Google
+
+Build & Install
+===============
+
+Build:
+ 
+  python setup.py build
+
+Install:
+
+  python setup.py install
+
+
