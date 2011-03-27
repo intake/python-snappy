@@ -14,7 +14,10 @@ Install:
 
   python setup.py install
 
+Run test
+========
 
+  nosetest test_snappy.py
 
 Snappy - compression library from Google (c)
  http://code.google.com/p/snappy
