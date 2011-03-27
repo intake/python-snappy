@@ -1,7 +1,9 @@
 python-snappy
 =============
 
-Python library for the snappy compression library from Google
+Python library for the snappy compression library from Google. 
+This library is distributed under the GNU General Public License 
+(http://www.gnu.org/licenses/gpl.html).
 
 Build & Install
 ===============
