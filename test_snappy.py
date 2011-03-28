@@ -21,7 +21,7 @@ class SnappyTest(TestCase):
         self.assertRaises(snappy.InvalidCompressedInputError, snappy.uncompress, "hoa")
 
     def test_unicode_compress(self):
-        text = u"hello unicode worl!"
+        text = u"hello unicode world!"
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.uncompress(compressed))
 

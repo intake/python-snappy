@@ -75,8 +75,9 @@ snappy__compress(PyObject *self, PyObject *args)
 {
     const char * input;
     int input_size;
-    char * output, *compressed;
+    char *compressed;
     size_t max_comp_size, real_size;
+    PyObject * result;
 
     if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
         return NULL;
@@ -84,21 +85,19 @@ snappy__compress(PyObject *self, PyObject *args)
     // Ask for the max size of the compressed object.
     max_comp_size = snappy_max_compressed_size(input_size);
 
-    compressed = (char*) malloc(sizeof(char) * max_comp_size);
-
     // Make snappy compression
+    compressed = (char*) malloc(sizeof(char) * max_comp_size);
     real_size = snappy_compress(input, compressed);
 
-    output = (char*) malloc(sizeof(char) * real_size);
-    memcpy(output, compressed, real_size);
-    free(compressed);
-
-    if (real_size > 0) 
-        return Py_BuildValue("s#", output, real_size);
+    if (real_size > 0) {
+        result = Py_BuildValue("s#", compressed, real_size);
+        free(compressed);
+        return result;
+    }
 
     PyErr_SetString(SnappyCompressError, 
         "Error ocurred while compressing string");
-    free(output);
+    free(compressed);
     return NULL;
 }
 
@@ -108,6 +107,7 @@ snappy__uncompress(PyObject *self, PyObject *args)
     const char * compressed;
     int status, comp_size;
     size_t uncomp_size;
+    PyObject * result;
 
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
         return NULL;
@@ -128,9 +128,13 @@ snappy__uncompress(PyObject *self, PyObject *args)
 
     char * uncompressed = (char *) malloc(sizeof(char) * uncomp_size);
     status = snappy_uncompress(compressed, comp_size, uncompressed);
-    if (status > 0)
-        return Py_BuildValue("s#", uncompressed, uncomp_size);
+    if (status > 0) {
+        result = Py_BuildValue("s#", uncompressed, uncomp_size);
+        free(uncompressed);
+        return result;
+    }
 
+    free(uncompressed);
     PyErr_SetString(SnappyUncompressError, 
         "An error ocurred while uncompressing the string");
     return NULL;
