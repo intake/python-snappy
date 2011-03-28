@@ -16,10 +16,8 @@
 
 from distutils.core import setup, Extension
 
-snappymodule = Extension('snappy', 
-                         include_dirs = ['/usr/local/include'],
-                         libraries = ['snappy'],
-                         library_dirs = ['/usr/local/lib', '/usr/lib'],
+snappymodule = Extension('snappy',
+                         libraries=['snappy'],
                          language='c++',
                          sources=['snappymodule.cc'])
 

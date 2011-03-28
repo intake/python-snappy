@@ -17,7 +17,6 @@
 */
 #include <Python.h>
 #include <string.h>
-#include <stdio.h>
 
 #ifdef __cplusplus
 #include <string>
@@ -118,11 +117,9 @@ snappy__uncompress(PyObject *self, PyObject *args)
             "Given compressed string is not valid!");
         return NULL;
     }
-    printf(" comp_size is %d\n", comp_size);
 
     status = snappy_get_uncompressed_length(compressed, comp_size, 
         &uncomp_size);
-    printf(" uncomp_size is %d\n", uncomp_size);
     if (!status) {
         PyErr_SetString(SnappyCompressedLengthError, 
             "Can not calculate uncompressed length");
