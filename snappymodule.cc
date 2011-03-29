@@ -150,12 +150,6 @@ snappy__uncompress(PyObject *self, PyObject *args)
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
         return NULL;
 
-    if (!snappy_is_valid_compressed_buffer(compressed, comp_size)) {
-        PyErr_SetString(SnappyInvalidCompressedInputError, 
-            "Given compressed string is not valid!");
-        return NULL;
-    }
-
     status = snappy_get_uncompressed_length(compressed, comp_size, 
         &uncomp_size);
     if (!status) {
