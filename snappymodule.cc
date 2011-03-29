@@ -17,6 +17,7 @@
 */
 #include <Python.h>
 #include <string.h>
+#include <stdio.h>
 
 #ifdef __cplusplus
 #include <string>
@@ -24,43 +25,80 @@
     
 using namespace std;
 
+/*
+ * snappy max_compressed_size
+ *
+ * Returns the max compressed size given the length of the
+ * character buffer to compress
+ */
 extern "C" size_t snappy_max_compressed_size(size_t length) {
     return snappy::MaxCompressedLength(length);
 }
 
+/*
+ * snappy get_uncompressed_length
+ *
+ * Returns the length of the uncompressed character buffer
+ */
 extern "C" int snappy_get_uncompressed_length(const char* compressed, 
     size_t compressed_length, size_t* result) {
     return (int)snappy::GetUncompressedLength(compressed, compressed_length, 
         result);
 }
 
+/*
+ * snappy is_valid_compressed_buffer binding
+ *
+ *  Returns True if the given compressed buffer is a valid one, False 
+ *  in other case
+ */
 extern "C" int snappy_is_valid_compressed_buffer(const char* compressed, 
     size_t compressed_length) {
     return (int)snappy::IsValidCompressedBuffer(compressed, compressed_length);
 }
 
-extern "C" size_t snappy_compress(const char * input, char * output) 
+/*
+ * snappy compress C binding
+ *
+ * Compress input and place the result in "output"
+ * Returns the length of the character buffer compressed
+ */
+extern "C" size_t snappy_compress(const char * input, size_t input_size, char * output) 
 {
-    string sinp = string(input), 
-           sout;
+    string sout;
     size_t ncompbytes;
 
-    ncompbytes = snappy::Compress(sinp.data(), sinp.size(), &sout);
-    sout.copy(output, sout.size(), 0);
-
+    ncompbytes = snappy::Compress(input, input_size, &sout);
+    memcpy(output, sout.data(), ncompbytes);
     return ncompbytes;
 }
 
+/*
+ * snappy uncompress C binding
+ * 
+ * Returns :
+ *  - 0 if there is an error while uncompressing or getting the uncompressed
+ *    length.
+ *  - length(uncompressed string) in other case
+ */
 extern "C" int snappy_uncompress(const char * compr, size_t compressed_length, 
     char * output) 
 {
     string uncompressed;
+    size_t uncomp_size;
     bool result;
     
     result = snappy::Uncompress(compr, compressed_length, &uncompressed);
-    uncompressed.copy(output, uncompressed.size(), 0);
+    if (!result)
+        return 0;
 
-    return (int)result;
+    result = snappy_get_uncompressed_length(compr, compressed_length, &uncomp_size);
+    if (!result)
+        return 0;
+
+    memcpy(output, uncompressed.data(), uncomp_size);
+
+    return uncomp_size;
 }
 #endif
 
@@ -87,7 +125,7 @@ snappy__compress(PyObject *self, PyObject *args)
 
     // Make snappy compression
     compressed = (char*) malloc(sizeof(char) * max_comp_size);
-    real_size = snappy_compress(input, compressed);
+    real_size = snappy_compress(input, input_size, compressed);
 
     if (real_size > 0) {
         result = Py_BuildValue("s#", compressed, real_size);
@@ -128,7 +166,7 @@ snappy__uncompress(PyObject *self, PyObject *args)
 
     char * uncompressed = (char *) malloc(sizeof(char) * uncomp_size);
     status = snappy_uncompress(compressed, comp_size, uncompressed);
-    if (status > 0) {
+    if (status != 0) {
         result = Py_BuildValue("s#", uncompressed, uncomp_size);
         free(uncompressed);
         return result;
@@ -140,11 +178,30 @@ snappy__uncompress(PyObject *self, PyObject *args)
     return NULL;
 }
 
+
+static PyObject *
+snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
+{
+    const char * compressed;
+    int result, comp_size;
+
+    if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
+        return NULL;
+
+    result = snappy_is_valid_compressed_buffer(compressed, comp_size);
+    if (result)
+        Py_RETURN_TRUE;
+    Py_RETURN_FALSE;
+}
+
+
 static PyMethodDef snappy_methods[] = {
     {"compress",  snappy__compress, METH_VARARGS, 
         "Compress a string using the snappy library."},
     {"uncompress",  snappy__uncompress, METH_VARARGS, 
         "Uncompress a string compressed with the snappy library."},
+    {"isValidCompressed",  snappy__is_valid_compressed_buffer, METH_VARARGS, 
+        "Returns True if the compressed buffer is valid, False otherwise"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
