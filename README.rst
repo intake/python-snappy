@@ -34,7 +34,7 @@ Compressing:
   %timeit snappy.compress("hola mundo cruel!")
   1000000 loops, best of 3: 849 ns per loop
 
-  *Snappy is 11 times faster than zlib when compressing*
+Snappy is 11 times faster than zlib when compressing
 
 Uncompressing:
 
@@ -48,7 +48,7 @@ Uncompressing:
   %timeit zlib.decompress(r)
   1000000 loops, best of 3: 1.11 us per loop
 
-  *Snappy is as twice as faster than zlib when decompressing*
+Snappy is as twice as faster than zlib when decompressing
 
 
 Snappy - compression library from Google (c)
