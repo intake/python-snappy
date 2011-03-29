@@ -24,7 +24,7 @@ snappymodule = Extension('snappy',
                          sources=['snappymodule.cc'])
 
 setup(
-    name='Snappy',
+    name='python-snappy',
     version=version,
     author='Andres Moreira',
     author_email='andres@andresmoreira.com',

@@ -20,6 +20,13 @@ Install:
 
   python setup.py install
 
+
+Or install it from PyPi:
+
+::
+ 
+  pip install python-snappy
+
 Run tests
 =========
 
