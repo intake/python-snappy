@@ -9,16 +9,19 @@ Build & Install
 ===============
 
 Build:
- 
+
+::
   python setup.py build
 
 Install:
 
+::
   python setup.py install
 
 Run tests
 =========
 
+::
   nosetest test_snappy.py
 
 Benchmarks
