@@ -16,6 +16,8 @@
 
 from distutils.core import setup, Extension
 
+version = '0.2'
+
 snappymodule = Extension('snappy',
                          libraries=['snappy'],
                          language='c++',
@@ -23,13 +25,28 @@ snappymodule = Extension('snappy',
 
 setup(
     name='Snappy',
-    version='0.1',
-    description='Python bindings for the snappy google library ('
-                'http://code.google.com/p/snappy)',
+    version=version,
     author='Andres Moreira',
     author_email='andres@andresmoreira.com',
     url='http://github.com/andrix/python-snappy',
-    license="GPL",
+    description='Python bindings for the snappy google library ('
+                'http://code.google.com/p/snappy)',
+    keywords='snappy, compression, google',
+    license='GPL',
+    classifiers=['Development Status :: 4 - Beta',
+                 'Topic :: Internet',
+                 'Topic :: Software Development',
+                 'Topic :: Software Development :: Libraries',
+                 'Topic :: System :: Archiving :: Compression',
+                 'License :: OSI Approved :: GNU General Public License (GPL)',
+                 'Intended Audience :: Developers',
+                 'Intended Audience :: System Administrators',
+                 'Operating System :: MacOS :: MacOS X',
+                 # 'Operating System :: Microsoft :: Windows', -- Not tested yet
+                 'Operating System :: POSIX',
+                 'Programming Language :: Python :: 2.5',
+                 'Programming Language :: Python :: 2.6',
+                 'Programming Language :: Python :: 2.7'],
     ext_modules = [snappymodule]
 )
 
