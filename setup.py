@@ -26,6 +26,12 @@
 from distutils.core import setup, Extension
 
 version = '0.2.1'
+long_description = """
+Python library for the snappy compression library from Google.
+
+More details about Snappy library: http://code.google.com/p/snappy
+"""
+
 
 snappymodule = Extension('snappy',
                          libraries=['snappy'],
@@ -38,8 +44,8 @@ setup(
     author='Andres Moreira',
     author_email='andres@andresmoreira.com',
     url='http://github.com/andrix/python-snappy',
-    description='Python bindings for the snappy google library ('
-                'http://code.google.com/p/snappy)',
+    description='Python library for the snappy compression library from Google',
+    long_description=long_description,
     keywords='snappy, compression, google',
     license='BSD',
     classifiers=['Development Status :: 4 - Beta',
