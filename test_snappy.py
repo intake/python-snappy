@@ -57,6 +57,12 @@ class SnappyCompressionTest(TestCase):
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.uncompress(compressed))
 
+    def test_decompress(self):
+        # decompress == uncompress, just to support compatibility with zlib
+        text = "hello world!"
+        compressed = snappy.compress(text)
+        self.assertEquals(text, snappy.decompress(compressed))
+
 class SnappyValidBufferTest(TestCase):
 
     def test_valid_compressed_buffer(self):

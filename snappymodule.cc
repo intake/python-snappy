@@ -203,6 +203,8 @@ static PyMethodDef snappy_methods[] = {
         "Compress a string using the snappy library."},
     {"uncompress",  snappy__uncompress, METH_VARARGS, 
         "Uncompress a string compressed with the snappy library."},
+    {"decompress",  snappy__uncompress, METH_VARARGS, 
+        "Alias to Uncompress method, to be compatible with zlib."},
     {"isValidCompressed",  snappy__is_valid_compressed_buffer, METH_VARARGS, 
         "Returns True if the compressed buffer is valid, False otherwise"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
