@@ -24,9 +24,20 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
-#include <Python.h>
+#include "Python.h"
 #include <string.h>
 #include <stdio.h>
+
+struct module_state {
+    PyObject *error;
+};
+
+#if PY_MAJOR_VERSION >= 3
+#define GETSTATE(m) ((struct module_state*)PyModule_GetState(m))
+#else
+#define GETSTATE(m) (&_state)
+static struct module_state _state;
+#endif
 
 #ifdef __cplusplus
 #include <string>
@@ -120,14 +131,23 @@ static PyObject *SnappyCompressError,
 static PyObject *
 snappy__compress(PyObject *self, PyObject *args)
 {
+#if PY_MAJOR_VERSION >= 3
+    Py_buffer pbuffer;
+#endif
     const char * input;
     int input_size;
     char *compressed;
     size_t max_comp_size, real_size;
     PyObject * result;
 
+#if PY_MAJOR_VERSION >= 3
+    if (!PyArg_ParseTuple(args, "y#", &pbuffer, &input_size))
+#else
     if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
+#endif
         return NULL;
+
+    input = (char*)pbuffer.buf;
 
     // Ask for the max size of the compressed object.
     max_comp_size = snappy_max_compressed_size(input_size);
@@ -137,7 +157,11 @@ snappy__compress(PyObject *self, PyObject *args)
     real_size = snappy_compress(input, input_size, compressed);
 
     if (real_size > 0) {
+#if PY_MAJOR_VERSION >= 3
+        result = PyBytes_FromStringAndSize((char *)compressed, real_size);
+#else
         result = Py_BuildValue("s#", compressed, real_size);
+#endif
         free(compressed);
         return result;
     }
@@ -151,13 +175,22 @@ snappy__compress(PyObject *self, PyObject *args)
 static PyObject *
 snappy__uncompress(PyObject *self, PyObject *args)
 {
+ #if PY_MAJOR_VERSION >= 3
+    Py_buffer pbuffer;
+#endif   
     const char * compressed;
     int status, comp_size;
     size_t uncomp_size;
     PyObject * result;
 
+#if PY_MAJOR_VERSION >=3
+    if (!PyArg_ParseTuple(args, "y#", &pbuffer, &comp_size))
+#else
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
+#endif
         return NULL;
+
+    compressed = (char*) pbuffer.buf;
 
     status = snappy_get_uncompressed_length(compressed, comp_size, 
         &uncomp_size);
@@ -170,7 +203,11 @@ snappy__uncompress(PyObject *self, PyObject *args)
     char * uncompressed = (char *) malloc(sizeof(char) * uncomp_size);
     status = snappy_uncompress(compressed, comp_size, uncompressed);
     if (status != 0) {
+#if PY_MAJOR_VERSION >= 3
+        result = PyBytes_FromStringAndSize((char *)uncompressed, uncomp_size);
+#else
         result = Py_BuildValue("s#", uncompressed, uncomp_size);
+#endif
         free(uncompressed);
         return result;
     }
@@ -197,7 +234,6 @@ snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
     Py_RETURN_FALSE;
 }
 
-
 static PyMethodDef snappy_methods[] = {
     {"compress",  snappy__compress, METH_VARARGS, 
         "Compress a string using the snappy library."},
@@ -210,19 +246,54 @@ static PyMethodDef snappy_methods[] = {
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
-#ifndef PyMODINIT_FUNC
-#define PyMODINIT_FUNC void
-#endif
+#if PY_MAJOR_VERSION >= 3
+
+static int snappy_traverse(PyObject *m, visitproc visit, void *arg) {
+    Py_VISIT(GETSTATE(m)->error);
+    return 0;
+}
+
+static int snappy_clear(PyObject *m) {
+    Py_CLEAR(GETSTATE(m)->error);
+    return 0;
+}
+
+
+static struct PyModuleDef moduledef = {
+        PyModuleDef_HEAD_INIT,
+        "snappy",
+        NULL,
+        sizeof(struct module_state),
+        snappy_methods,
+        NULL,
+        snappy_traverse,
+        snappy_clear,
+        NULL
+};
+
+
+#define INITERROR return NULL
+
+PyMODINIT_FUNC
+PyInit_snappy(void)
+
+#else
+#define INITERROR return
 
 PyMODINIT_FUNC
 initsnappy(void)
+#endif
 {
     PyObject *m;
 
-    PyImport_AddModule("snappy");
+    #if PY_MAJOR_VERSION >= 3
+    m = PyModule_Create(&moduledef);
+    #else
     m = Py_InitModule("snappy", snappy_methods);
+    #endif
+
     if (m == NULL)
-        return;
+        INITERROR;
 
     SnappyCompressError = PyErr_NewException((char*)"snappy.CompressError", 
         NULL, NULL);
@@ -243,21 +314,9 @@ initsnappy(void)
     PyModule_AddObject(m, "InvalidCompressedInputError", 
         SnappyInvalidCompressedInputError);
     PyModule_AddObject(m, "CompressedLengthError", SnappyCompressedLengthError);
+
+#if PY_MAJOR_VERSION >= 3
+    return m;
+#endif
 }
 
-
-int main(int argc, char **argv)
-{
-    /* Pass argv[0] to the Python interpreter */
-    Py_SetProgramName(argv[0]);
-
-    /* Initialize the Python interpreter.  Required. */
-    Py_Initialize();
-
-    /* Add a static module */
-    initsnappy();
-
-    /* Exit, cleaning up the interpreter */
-    Py_Exit(0);
-    return 0;
-}
