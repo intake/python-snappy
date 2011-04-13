@@ -147,8 +147,9 @@ snappy__compress(PyObject *self, PyObject *args)
 #endif
         return NULL;
 
+#if PY_MAJOR_VERSION >= 3
     input = (char*)pbuffer.buf;
-
+#endif
     // Ask for the max size of the compressed object.
     max_comp_size = snappy_max_compressed_size(input_size);
 
@@ -190,8 +191,10 @@ snappy__uncompress(PyObject *self, PyObject *args)
 #endif
         return NULL;
 
+#if PY_MAJOR_VERSION >= 3
     compressed = (char*) pbuffer.buf;
-
+#endif
+    
     status = snappy_get_uncompressed_length(compressed, comp_size, 
         &uncomp_size);
     if (!status) {
