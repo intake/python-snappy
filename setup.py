@@ -25,7 +25,7 @@
 
 from distutils.core import setup, Extension
 
-version = '0.2.1'
+version = '0.3'
 long_description = """
 Python library for the snappy compression library from Google.
 
@@ -61,7 +61,12 @@ setup(
                  'Operating System :: POSIX',
                  'Programming Language :: Python :: 2.5',
                  'Programming Language :: Python :: 2.6',
-                 'Programming Language :: Python :: 2.7'],
+                 'Programming Language :: Python :: 2.7',
+                 'Programming Language :: Python :: 3',
+                 'Programming Language :: Python :: 3.0',
+                 'Programming Language :: Python :: 3.1',
+                 'Programming Language :: Python :: 3.2',
+                 ],
     ext_modules = [snappymodule]
 )
 
