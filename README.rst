@@ -5,6 +5,12 @@ Python library for the snappy compression library from Google.
 This library is distributed under the New BSD License
 (http://www.opensource.org/licenses/bsd-license.php).
 
+Dependencies
+============
+
+* snappy library >= 1.0.2 (or revision 27)
+  http://code.google.com/p/snappy/
+
 Build & Install
 ===============
 
