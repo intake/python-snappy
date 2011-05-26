@@ -1,5 +1,6 @@
 /*
 Copyright (c) 2011, Andres Moreira <andres@andresmoreira.com>
+              2011, Felipe Cruz <felipecruz@loogica.net>
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -27,6 +28,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "Python.h"
 #include <string.h>
 #include <stdio.h>
+#include <snappy-c.h>
 
 struct module_state {
     PyObject *error;
@@ -37,89 +39,6 @@ struct module_state {
 #else
 #define GETSTATE(m) (&_state)
 static struct module_state _state;
-#endif
-
-#ifdef __cplusplus
-#include <string>
-#include <snappy.h>
-    
-using namespace std;
-
-/*
- * snappy max_compressed_size
- *
- * Returns the max compressed size given the length of the
- * character buffer to compress
- */
-extern "C" size_t snappy_max_compressed_size(size_t length) {
-    return snappy::MaxCompressedLength(length);
-}
-
-/*
- * snappy get_uncompressed_length
- *
- * Returns the length of the uncompressed character buffer
- */
-extern "C" int snappy_get_uncompressed_length(const char* compressed, 
-    size_t compressed_length, size_t* result) {
-    return (int)snappy::GetUncompressedLength(compressed, compressed_length, 
-        result);
-}
-
-/*
- * snappy is_valid_compressed_buffer binding
- *
- *  Returns True if the given compressed buffer is a valid one, False 
- *  in other case
- */
-extern "C" int snappy_is_valid_compressed_buffer(const char* compressed, 
-    size_t compressed_length) {
-    return (int)snappy::IsValidCompressedBuffer(compressed, compressed_length);
-}
-
-/*
- * snappy compress C binding
- *
- * Compress input and place the result in "output"
- * Returns the length of the character buffer compressed
- */
-extern "C" size_t snappy_compress(const char * input, size_t input_size, char * output) 
-{
-    string sout;
-    size_t ncompbytes;
-
-    ncompbytes = snappy::Compress(input, input_size, &sout);
-    memcpy(output, sout.data(), ncompbytes);
-    return ncompbytes;
-}
-
-/*
- * snappy uncompress C binding
- * 
- * Returns :
- *  - 0 if there is an error while uncompressing or getting the uncompressed
- *    length.
- *  - length(uncompressed string) in other case
- */
-extern "C" int snappy_uncompress(const char * compr, size_t compressed_length, 
-    char * output) 
-{
-    string uncompressed;
-    size_t uncomp_size;
-    bool result;
-    
-    result = snappy::Uncompress(compr, compressed_length, &uncompressed);
-    if (!result)
-        return 0;
-
-    result = snappy_get_uncompressed_length(compr, compressed_length, &uncomp_size);
-    if (!result)
-        return 0;
-
-    memcpy(output, uncompressed.data(), uncomp_size);
-
-    return uncomp_size;
-}
 #endif
 
 
@@ -140,6 +59,8 @@ snappy__compress(PyObject *self, PyObject *args)
     size_t max_comp_size, real_size;
     PyObject * result;
 
+    snappy_status status;
+
 #if PY_MAJOR_VERSION >= 3
     if (!PyArg_ParseTuple(args, "y#", &pbuffer, &input_size))
 #else
@@ -151,13 +72,13 @@ snappy__compress(PyObject *self, PyObject *args)
     input = (char*)pbuffer.buf;
 #endif
     // Ask for the max size of the compressed object.
-    max_comp_size = snappy_max_compressed_size(input_size);
+    max_comp_size = snappy_max_compressed_length(input_size);
 
     // Make snappy compression
     compressed = (char*) malloc(sizeof(char) * max_comp_size);
-    real_size = snappy_compress(input, input_size, compressed);
+    status = snappy_compress(input, input_size, compressed, &real_size);
 
-    if (real_size > 0) {
+    if (status == SNAPPY_OK) {
 #if PY_MAJOR_VERSION >= 3
         result = PyBytes_FromStringAndSize((char *)compressed, real_size);
 #else
@@ -180,9 +101,10 @@ snappy__uncompress(PyObject *self, PyObject *args)
     Py_buffer pbuffer;
 #endif   
     const char * compressed;
-    int status, comp_size;
+    int comp_size;
     size_t uncomp_size;
     PyObject * result;
+    snappy_status status;
 
 #if PY_MAJOR_VERSION >=3
     if (!PyArg_ParseTuple(args, "y#", &pbuffer, &comp_size))
@@ -195,17 +117,17 @@ snappy__uncompress(PyObject *self, PyObject *args)
     compressed = (char*) pbuffer.buf;
 #endif
     
-    status = snappy_get_uncompressed_length(compressed, comp_size, 
+    status = snappy_uncompressed_length(compressed, comp_size, 
         &uncomp_size);
-    if (!status) {
+    if (status != SNAPPY_OK) {
         PyErr_SetString(SnappyCompressedLengthError, 
             "Can not calculate uncompressed length");
         return NULL;
     }
 
     char * uncompressed = (char *) malloc(sizeof(char) * uncomp_size);
-    status = snappy_uncompress(compressed, comp_size, uncompressed);
-    if (status != 0) {
+    status = snappy_uncompress(compressed, comp_size, uncompressed, &uncomp_size);
+    if (status == SNAPPY_OK) {
 #if PY_MAJOR_VERSION >= 3
         result = PyBytes_FromStringAndSize((char *)uncompressed, uncomp_size);
 #else
@@ -226,13 +148,14 @@ static PyObject *
 snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
 {
     const char * compressed;
-    int result, comp_size;
+    int comp_size;
+    snappy_status status;
 
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
         return NULL;
 
-    result = snappy_is_valid_compressed_buffer(compressed, comp_size);
-    if (result)
+    status = snappy_validate_compressed_buffer(compressed, comp_size);
+    if (status == SNAPPY_OK)
         Py_RETURN_TRUE;
     Py_RETURN_FALSE;
 }
