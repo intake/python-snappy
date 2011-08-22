@@ -30,6 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <snappy-c.h>
 
+#define MODULE_VERSION "0.3.2"
+
 struct module_state {
     PyObject *error;
 };
@@ -239,6 +241,10 @@ initsnappy(void)
     PyModule_AddObject(m, "InvalidCompressedInputError", 
         SnappyInvalidCompressedInputError);
     PyModule_AddObject(m, "CompressedLengthError", SnappyCompressedLengthError);
+
+    /* Version = MODULE_VERSION */
+    if (!PyModule_AddStringConstant(m, "__version__", MODULE_VERSION))
+        INITERROR;
 
 #if PY_MAJOR_VERSION >= 3
     return m;
