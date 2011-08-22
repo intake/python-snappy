@@ -59,6 +59,11 @@ class SnappyCompressionTest(TestCase):
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.decompress(compressed))
 
+    def test_big_string(self):
+        text = ('a'*10000000).encode('utf-8')
+        compressed = snappy.compress(text)
+        self.assertEquals(text, snappy.decompress(compressed))
+
 class SnappyValidBufferTest(TestCase):
 
     def test_valid_compressed_buffer(self):
