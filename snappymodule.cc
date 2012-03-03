@@ -126,19 +126,14 @@ snappy__uncompress(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    char * uncompressed = (char *) malloc(sizeof(char) * uncomp_size);
-    status = snappy_uncompress(compressed, comp_size, uncompressed, &uncomp_size);
-    if (status == SNAPPY_OK) {
-#if PY_MAJOR_VERSION >= 3
-        result = PyBytes_FromStringAndSize((char *)uncompressed, uncomp_size);
-#else
-        result = Py_BuildValue("s#", uncompressed, uncomp_size);
-#endif
-        free(uncompressed);
-        return result;
+    // FIXME MAKE THIS WORK WITH PY3
+    result = PyString_FromStringAndSize(NULL, uncomp_size);
+    if (result) {
+        status = snappy_uncompress(compressed, comp_size, PyString_AS_STRING(result), &uncomp_size);
+        if (SNAPPY_OK == status) {
+            return result;
+        } 
     }
-
-    free(uncompressed);
     PyErr_SetString(SnappyUncompressError, 
         "An error ocurred while uncompressing the string");
     return NULL;
