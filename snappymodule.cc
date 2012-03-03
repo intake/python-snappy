@@ -44,6 +44,13 @@ static struct module_state _state;
 #endif
 
 
+/* if support for Python 2.5 is dropped the bytesobject.h will do this for us */
+#if PY_MAJOR_VERSION < 3
+#define PyBytes_FromStringAndSize PyString_FromStringAndSize
+#define _PyBytes_Resize _PyString_Resize
+#define PyBytes_AS_STRING PyString_AS_STRING
+#endif
+
 static PyObject *SnappyCompressError,
     *SnappyUncompressError,
     *SnappyInvalidCompressedInputError,
@@ -76,11 +83,11 @@ snappy__compress(PyObject *self, PyObject *args)
     compressed_size = snappy_max_compressed_length(input_size);
 
     // Make snappy compression
-    result = PyString_FromStringAndSize(NULL, compressed_size);
+    result = PyBytes_FromStringAndSize(NULL, compressed_size);
     if (result) {
-        status = snappy_compress(input, input_size, PyString_AS_STRING(result), &compressed_size);
+        status = snappy_compress(input, input_size, PyBytes_AS_STRING(result), &compressed_size);
         if (status == SNAPPY_OK) {
-            _PyString_Resize(&result, compressed_size);
+            _PyBytes_Resize(&result, compressed_size);
             return result;
         }
         else {
@@ -123,12 +130,11 @@ snappy__uncompress(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    // FIXME MAKE THIS WORK WITH PY3
-    result = PyString_FromStringAndSize(NULL, uncomp_size);
+    result = PyBytes_FromStringAndSize(NULL, uncomp_size);
     if (result) {
-        status = snappy_uncompress(compressed, comp_size, PyString_AS_STRING(result), &uncomp_size);
+        status = snappy_uncompress(compressed, comp_size, PyBytes_AS_STRING(result), &uncomp_size);
         if (SNAPPY_OK == status) {
-            _PyString_Resize(&result, uncomp_size);
+            _PyBytes_Resize(&result, uncomp_size);
             return result;
         } 
         else {
