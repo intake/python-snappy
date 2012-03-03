@@ -131,8 +131,12 @@ snappy__uncompress(PyObject *self, PyObject *args)
     if (result) {
         status = snappy_uncompress(compressed, comp_size, PyString_AS_STRING(result), &uncomp_size);
         if (SNAPPY_OK == status) {
+            _PyString_Resize(&result, uncomp_size);
             return result;
         } 
+        else {
+            Py_DECREF(result);
+        }
     }
     PyErr_SetString(SnappyUncompressError, 
         "An error ocurred while uncompressing the string");
