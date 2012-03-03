@@ -245,7 +245,7 @@ initsnappy(void)
     PyModule_AddObject(m, "CompressedLengthError", SnappyCompressedLengthError);
 
     /* Version = MODULE_VERSION */
-    if (!PyModule_AddStringConstant(m, "__version__", MODULE_VERSION))
+    if (PyModule_AddStringConstant(m, "__version__", MODULE_VERSION))
         INITERROR;
 
 #if PY_MAJOR_VERSION >= 3
