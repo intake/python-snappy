@@ -57,7 +57,6 @@ snappy__compress(PyObject *self, PyObject *args)
 #endif
     const char * input;
     int input_size;
-    char *compressed;
     size_t compressed_size;
     PyObject * result;
 
@@ -77,22 +76,20 @@ snappy__compress(PyObject *self, PyObject *args)
     compressed_size = snappy_max_compressed_length(input_size);
 
     // Make snappy compression
-    compressed = (char*) malloc(sizeof(char) * compressed_size);
-    status = snappy_compress(input, input_size, compressed, &compressed_size);
-
-    if (status == SNAPPY_OK) {
-#if PY_MAJOR_VERSION >= 3
-        result = PyBytes_FromStringAndSize((char *)compressed, compressed_size);
-#else
-        result = Py_BuildValue("s#", compressed, compressed_size);
-#endif
-        free(compressed);
-        return result;
+    result = PyString_FromStringAndSize(NULL, compressed_size);
+    if (result) {
+        status = snappy_compress(input, input_size, PyString_AS_STRING(result), &compressed_size);
+        if (status == SNAPPY_OK) {
+            _PyString_Resize(&result, compressed_size);
+            return result;
+        }
+        else {
+            Py_DECREF(result);
+        }
     }
 
     PyErr_SetString(SnappyCompressError, 
         "Error ocurred while compressing string");
-    free(compressed);
     return NULL;
 }
 
