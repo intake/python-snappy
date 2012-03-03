@@ -46,7 +46,7 @@ class SnappyCompressionTest(TestCase):
         self.assertEquals(_bytes, snappy.uncompress(compressed))
 
     def test_randombytes2_compress(self):
-        _bytes = str(os.urandom(10000))
+        _bytes = bytes(os.urandom(10000))
         compressed = snappy.compress(_bytes)
         self.assertEquals(_bytes, snappy.uncompress(compressed))
 
