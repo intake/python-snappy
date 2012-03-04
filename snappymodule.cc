@@ -59,9 +59,6 @@ static PyObject *SnappyCompressError,
 static PyObject *
 snappy__compress(PyObject *self, PyObject *args)
 {
-#if PY_MAJOR_VERSION >= 3
-    Py_buffer pbuffer;
-#endif
     const char * input;
     int input_size;
     size_t compressed_size;
@@ -70,15 +67,12 @@ snappy__compress(PyObject *self, PyObject *args)
     snappy_status status;
 
 #if PY_MAJOR_VERSION >= 3
-    if (!PyArg_ParseTuple(args, "y#", &pbuffer, &input_size))
+    if (!PyArg_ParseTuple(args, "y#", &input, &input_size))
 #else
     if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
 #endif
         return NULL;
 
-#if PY_MAJOR_VERSION >= 3
-    input = (char*)pbuffer.buf;
-#endif
     // Ask for the max size of the compressed object.
     compressed_size = snappy_max_compressed_length(input_size);
 
@@ -103,9 +97,6 @@ snappy__compress(PyObject *self, PyObject *args)
 static PyObject *
 snappy__uncompress(PyObject *self, PyObject *args)
 {
- #if PY_MAJOR_VERSION >= 3
-    Py_buffer pbuffer;
-#endif   
     const char * compressed;
     int comp_size;
     size_t uncomp_size;
@@ -113,15 +104,11 @@ snappy__uncompress(PyObject *self, PyObject *args)
     snappy_status status;
 
 #if PY_MAJOR_VERSION >=3
-    if (!PyArg_ParseTuple(args, "y#", &pbuffer, &comp_size))
+    if (!PyArg_ParseTuple(args, "y#", &compressed, &comp_size))
 #else
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
 #endif
         return NULL;
-
-#if PY_MAJOR_VERSION >= 3
-    compressed = (char*) pbuffer.buf;
-#endif
     
     status = snappy_uncompressed_length(compressed, comp_size, &uncomp_size);
     if (status != SNAPPY_OK) {
