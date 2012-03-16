@@ -44,6 +44,13 @@ static struct module_state _state;
 #endif
 
 
+/* if support for Python 2.5 is dropped the bytesobject.h will do this for us */
+#if PY_MAJOR_VERSION < 3
+#define PyBytes_FromStringAndSize PyString_FromStringAndSize
+#define _PyBytes_Resize _PyString_Resize
+#define PyBytes_AS_STRING PyString_AS_STRING
+#endif
+
 static PyObject *SnappyCompressError,
     *SnappyUncompressError,
     *SnappyInvalidCompressedInputError,
@@ -52,56 +59,44 @@ static PyObject *SnappyCompressError,
 static PyObject *
 snappy__compress(PyObject *self, PyObject *args)
 {
-#if PY_MAJOR_VERSION >= 3
-    Py_buffer pbuffer;
-#endif
     const char * input;
     int input_size;
-    char *compressed;
     size_t compressed_size;
     PyObject * result;
 
     snappy_status status;
 
 #if PY_MAJOR_VERSION >= 3
-    if (!PyArg_ParseTuple(args, "y#", &pbuffer, &input_size))
+    if (!PyArg_ParseTuple(args, "y#", &input, &input_size))
 #else
     if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
 #endif
         return NULL;
 
-#if PY_MAJOR_VERSION >= 3
-    input = (char*)pbuffer.buf;
-#endif
     // Ask for the max size of the compressed object.
     compressed_size = snappy_max_compressed_length(input_size);
 
     // Make snappy compression
-    compressed = (char*) malloc(sizeof(char) * compressed_size);
-    status = snappy_compress(input, input_size, compressed, &compressed_size);
-
-    if (status == SNAPPY_OK) {
-#if PY_MAJOR_VERSION >= 3
-        result = PyBytes_FromStringAndSize((char *)compressed, compressed_size);
-#else
-        result = Py_BuildValue("s#", compressed, compressed_size);
-#endif
-        free(compressed);
-        return result;
+    result = PyBytes_FromStringAndSize(NULL, compressed_size);
+    if (result) {
+        status = snappy_compress(input, input_size, PyBytes_AS_STRING(result), &compressed_size);
+        if (status == SNAPPY_OK) {
+            _PyBytes_Resize(&result, compressed_size);
+            return result;
+        }
+        else {
+            Py_DECREF(result);
+        }
     }
 
     PyErr_SetString(SnappyCompressError, 
         "Error ocurred while compressing string");
-    free(compressed);
     return NULL;
 }
 
 static PyObject *
 snappy__uncompress(PyObject *self, PyObject *args)
 {
- #if PY_MAJOR_VERSION >= 3
-    Py_buffer pbuffer;
-#endif   
     const char * compressed;
     int comp_size;
     size_t uncomp_size;
@@ -109,15 +104,11 @@ snappy__uncompress(PyObject *self, PyObject *args)
     snappy_status status;
 
 #if PY_MAJOR_VERSION >=3
-    if (!PyArg_ParseTuple(args, "y#", &pbuffer, &comp_size))
+    if (!PyArg_ParseTuple(args, "y#", &compressed, &comp_size))
 #else
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
 #endif
         return NULL;
-
-#if PY_MAJOR_VERSION >= 3
-    compressed = (char*) pbuffer.buf;
-#endif
     
     status = snappy_uncompressed_length(compressed, comp_size, &uncomp_size);
     if (status != SNAPPY_OK) {
@@ -126,19 +117,17 @@ snappy__uncompress(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    char * uncompressed = (char *) malloc(sizeof(char) * uncomp_size);
-    status = snappy_uncompress(compressed, comp_size, uncompressed, &uncomp_size);
-    if (status == SNAPPY_OK) {
-#if PY_MAJOR_VERSION >= 3
-        result = PyBytes_FromStringAndSize((char *)uncompressed, uncomp_size);
-#else
-        result = Py_BuildValue("s#", uncompressed, uncomp_size);
-#endif
-        free(uncompressed);
-        return result;
+    result = PyBytes_FromStringAndSize(NULL, uncomp_size);
+    if (result) {
+        status = snappy_uncompress(compressed, comp_size, PyBytes_AS_STRING(result), &uncomp_size);
+        if (SNAPPY_OK == status) {
+            _PyBytes_Resize(&result, uncomp_size);
+            return result;
+        } 
+        else {
+            Py_DECREF(result);
+        }
     }
-
-    free(uncompressed);
     PyErr_SetString(SnappyUncompressError, 
         "An error ocurred while uncompressing the string");
     return NULL;
@@ -243,7 +232,7 @@ initsnappy(void)
     PyModule_AddObject(m, "CompressedLengthError", SnappyCompressedLengthError);
 
     /* Version = MODULE_VERSION */
-    if (!PyModule_AddStringConstant(m, "__version__", MODULE_VERSION))
+    if (PyModule_AddStringConstant(m, "__version__", MODULE_VERSION))
         INITERROR;
 
 #if PY_MAJOR_VERSION >= 3
