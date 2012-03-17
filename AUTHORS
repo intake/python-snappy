@@ -5,4 +5,8 @@ Contributors:
    Added support for Python 3.X
  * Liokm <https://github.com/liokm>
    Reported bug on snappy.compress function
+ * Nathan Moore <https://github.com/nathanmoore>
+   Improved support for Python 3.X, and improved the library 
+   by removing unncesaries memomry allocation:
+   - https://github.com/andrix/python-snappy/pull/8
 
