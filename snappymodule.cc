@@ -30,7 +30,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <stdio.h>
 #include <snappy-c.h>
 
-#define MODULE_VERSION "0.3.2"
+#define MODULE_VERSION "0.4.1"
+#define RESIZE_TOLERATION 0.75
 
 struct module_state {
     PyObject *error;
@@ -56,17 +57,17 @@ static PyObject *SnappyCompressError,
     *SnappyInvalidCompressedInputError,
     *SnappyCompressedLengthError;
 
-static inline PyObject *maybe_resize(PyObject *str, size_t expected_size,
-			      size_t actual_size)
+static inline PyObject *
+maybe_resize(PyObject *str, size_t expected_size, size_t actual_size)
 {
     // Tolerate up to 25% slop, to reduce the likelihood of
     // reallocation and copying.
     if (actual_size != expected_size) {
-	if (actual_size < (expected_size / 4) * 3) {
-	    _PyBytes_Resize(&str, actual_size);
-	    return str;
-	}
-	Py_SIZE(str) = actual_size;
+	    if (actual_size < expected_size * RESIZE_TOLERATION) {
+	        _PyBytes_Resize(&str, actual_size);
+	        return str;
+	    }
+	    Py_SIZE(str) = actual_size;
     }
     return str;
 }
@@ -94,10 +95,10 @@ snappy__compress(PyObject *self, PyObject *args)
     // Make snappy compression
     result = PyBytes_FromStringAndSize(NULL, compressed_size);
     if (result) {
-	actual_size = compressed_size;
+        actual_size = compressed_size;
         status = snappy_compress(input, input_size, PyBytes_AS_STRING(result), &actual_size);
         if (status == SNAPPY_OK) {
-	    return maybe_resize(result, compressed_size, actual_size);
+            return maybe_resize(result, compressed_size, actual_size);
         }
         else {
             Py_DECREF(result);
@@ -134,10 +135,10 @@ snappy__uncompress(PyObject *self, PyObject *args)
 
     result = PyBytes_FromStringAndSize(NULL, uncomp_size);
     if (result) {
-	actual_size = uncomp_size;
+        actual_size = uncomp_size;
         status = snappy_uncompress(compressed, comp_size, PyBytes_AS_STRING(result), &actual_size);
         if (SNAPPY_OK == status) {
-	    return maybe_resize(result, uncomp_size, actual_size);
+            return maybe_resize(result, uncomp_size, actual_size);
         }
         else {
             Py_DECREF(result);

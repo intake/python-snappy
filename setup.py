@@ -25,7 +25,7 @@
 
 from distutils.core import setup, Extension
 
-version = '0.4'
+version = '0.4.1'
 long_description = """
 Python library for the snappy compression library from Google.
 
