@@ -72,6 +72,20 @@ maybe_resize(PyObject *str, size_t expected_size, size_t actual_size)
     return str;
 }
 
+static const char *snappy_strerror(snappy_status status)
+{
+    switch (status) {
+    case SNAPPY_OK:
+	return "no error";
+    case SNAPPY_INVALID_INPUT:
+	return "invalid input";
+    case SNAPPY_BUFFER_TOO_SMALL:
+	return "buffer too small";
+    default:
+	return "unknown error";
+    }
+}
+
 static PyObject *
 snappy__compress(PyObject *self, PyObject *args)
 {
@@ -105,8 +119,8 @@ snappy__compress(PyObject *self, PyObject *args)
         }
     }
 
-    PyErr_SetString(SnappyCompressError,
-        "Error ocurred while compressing string");
+    PyErr_Format(SnappyCompressError,
+		 "Error while compressing: %s", snappy_strerror(status));
     return NULL;
 }
 
@@ -144,8 +158,8 @@ snappy__uncompress(PyObject *self, PyObject *args)
             Py_DECREF(result);
         }
     }
-    PyErr_SetString(SnappyUncompressError,
-        "An error ocurred while uncompressing the string");
+    PyErr_Format(SnappyUncompressError,
+		 "Error while decompressing: %s", snappy_strerror(status));
     return NULL;
 }
 
