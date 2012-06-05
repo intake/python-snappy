@@ -72,17 +72,18 @@ maybe_resize(PyObject *str, size_t expected_size, size_t actual_size)
     return str;
 }
 
-static const char *snappy_strerror(snappy_status status)
+static const char *
+snappy_strerror(snappy_status status)
 {
     switch (status) {
-    case SNAPPY_OK:
-	return "no error";
-    case SNAPPY_INVALID_INPUT:
-	return "invalid input";
-    case SNAPPY_BUFFER_TOO_SMALL:
-	return "buffer too small";
-    default:
-	return "unknown error";
+        case SNAPPY_OK:
+	        return "no error";
+        case SNAPPY_INVALID_INPUT:
+	        return "invalid input";
+        case SNAPPY_BUFFER_TOO_SMALL:
+	        return "buffer too small";
+        default:
+	        return "unknown error";
     }
 }
 
@@ -93,7 +94,6 @@ snappy__compress(PyObject *self, PyObject *args)
     int input_size;
     size_t compressed_size, actual_size;
     PyObject * result;
-
     snappy_status status;
 
 #if PY_MAJOR_VERSION >= 3
@@ -206,15 +206,15 @@ static int snappy_clear(PyObject *m) {
 
 
 static struct PyModuleDef moduledef = {
-        PyModuleDef_HEAD_INIT,
-        "snappy",
-        NULL,
-        sizeof(struct module_state),
-        snappy_methods,
-        NULL,
-        snappy_traverse,
-        snappy_clear,
-        NULL
+    PyModuleDef_HEAD_INIT,
+    "snappy",
+    NULL,
+    sizeof(struct module_state),
+    snappy_methods,
+    NULL,
+    snappy_traverse,
+    snappy_clear,
+    NULL
 };
 
 

@@ -79,3 +79,8 @@ class SnappyValidBufferTest(TestCase):
 
     def test_invalid_compressed_buffer(self):
         self.assertFalse(snappy.isValidCompressed("not compressed"))
+
+if __name__ == "__main__":
+    # in case nose is not installed
+    import unittest
+    unittest.main()
