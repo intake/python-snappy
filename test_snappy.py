@@ -102,7 +102,7 @@ class SnappyStreaming(TestCase):
                 chunk = os.urandom(random.randint(0, 65536))
                 data += chunk
                 compressed += compressor.add_chunk(
-                        chunk, compress=random.choice([True, False]))
+                        chunk, compress=random.choice([True, False, None]))
 
             upper_bound = random.choice([256, 65536])
             while compressed:

@@ -55,6 +55,10 @@ _IDENTIFIER_CHUNK = 0xff
 _RESERVED_UNSKIPPABLE = (0x02, 0x80)  # chunk ranges are [inclusive, exclusive)
 _RESERVED_SKIPPABLE = (0x80, 0x100)
 
+# the minimum percent of bytes compression must save to be enabled in automatic
+# mode
+_COMPRESSION_THRESHOLD = .125
+
 def _masked_crc32c(data):
     # see the framing format specification
     crc = _crc32c(data)
@@ -86,12 +90,16 @@ class StreamCompressor(object):
     def __init__(self):
         self._header_chunk_written = False
 
-    def add_chunk(self, data, compress=True):
+    def add_chunk(self, data, compress=None):
         """Add a chunk containing 'data', returning a string that is framed and
         (optionally, default) compressed. This data should be concatenated to
         the tail end of an existing Snappy stream. In the absence of any
         internal buffering, no data is left in any internal buffers, and so
         unlike zlib.compress, this method returns everything.
+
+        If compress is None, compression is determined automatically based on
+        snappy's performance. If compress == True, compression always happens,
+        and if compress == False, compression never happens.
         """
         if not self._header_chunk_written:
             self._header_chunk_written = True
@@ -100,15 +108,23 @@ class StreamCompressor(object):
                    _STREAM_IDENTIFIER]
         else:
             out = []
-        if compress:
-            chunk_type = _COMPRESSED_CHUNK
-        else:
-            chunk_type = _UNCOMPRESSED_CHUNK
         for i in range(0, len(data), _CHUNK_MAX):
             chunk = data[i:i + _CHUNK_MAX]
             crc = _masked_crc32c(chunk)
-            if compress:
+            if compress is None:
+                compressed_chunk = _compress(chunk)
+                if (len(compressed_chunk) <=
+                        (1 - _COMPRESSION_THRESHOLD) * len(chunk)):
+                    chunk = compressed_chunk
+                    chunk_type = _COMPRESSED_CHUNK
+                else:
+                    chunk_type = _UNCOMPRESSED_CHUNK
+                compressed_chunk = None
+            elif compress:
                 chunk = _compress(chunk)
+                chunk_type = _COMPRESSED_CHUNK
+            else:
+                chunk_type = _UNCOMPRESSED_CHUNK
             out.append(struct.pack("<BHL", chunk_type, len(chunk) + 4, crc))
             out.append(chunk)
         return b"".join(out)
@@ -117,7 +133,7 @@ class StreamCompressor(object):
         """This method is simply an alias for compatibility with zlib
         compressobj's compress method.
         """
-        return self.add_chunk(data, compress=True)
+        return self.add_chunk(data)
 
     def flush(self, mode=None):
         """This method does nothing and only exists for compatibility with
