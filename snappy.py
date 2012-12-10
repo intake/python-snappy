@@ -223,3 +223,74 @@ class StreamDecompressor(object):
         copy = StreamDecompressor()
         copy._buf, copy._header_found = self._buf, self._header_found
         return copy
+
+
+def stream_compress(src, dst, blocksize=16384):
+    """Takes an incoming file-like object and an outgoing file-like object,
+    reads data from src, compresses it, and writes it to dst. 'src' should
+    support the read method, and 'dst' should support the write method.
+
+    The default blocksize is good for almost every scenario.
+    """
+    compressor = StreamCompressor()
+    while True:
+        buf = src.read(blocksize)
+        if not buf: break
+        buf = compressor.add_chunk(buf)
+        if buf: dst.write(buf)
+
+
+def stream_decompress(src, dst, blocksize=16384):
+    """Takes an incoming file-like object and an outgoing file-like object,
+    reads data from src, decompresses it, and writes it to dst. 'src' should
+    support the read method, and 'dst' should support the write method.
+
+    The default blocksize is good for almost every scenario.
+    """
+    decompressor = StreamDecompressor()
+    while True:
+        buf = src.read(blocksize)
+        if not buf: break
+        buf = decompressor.decompress(buf)
+        if buf: dst.write(buf)
+    decompressor.flush()  # makes sure the stream ended well
+
+
+def cmdline_main():
+    """This method is what is run when invoking snappy via the commandline.
+    Try python -msnappy --help
+    """
+    import sys
+    if (len(sys.argv) < 2 or len(sys.argv) > 4 or "--help" in sys.argv or
+            "-h" in sys.argv or sys.argv[1] not in ("-c", "-d")):
+        print("Usage: python -m snappy <-c/-d> [src [dst]]")
+        print("             -c      compress")
+        print("             -d      decompress")
+        print("output is stdout if dst is omitted or '-'")
+        print("input is stdin if src and dst are omitted or src is '-'.")
+        sys.exit(1)
+
+    if len(sys.argv) >= 4 and sys.argv[3] != "-":
+        dst = open(sys.argv[3], "wb")
+    elif hasattr(sys.stdout, 'buffer'):
+        dst = sys.stdout.buffer
+    else:
+        dst = sys.stdout
+
+    if len(sys.argv) >= 3 and sys.argv[2] != "-":
+        src = open(sys.argv[2], "rb")
+    elif hasattr(sys.stdin, "buffer"):
+        src = sys.stdin.buffer
+    else:
+        src = sys.stdin
+
+    if sys.argv[1] == "-c":
+        method = stream_compress
+    else:
+        method = stream_decompress
+
+    method(src, dst)
+
+
+if __name__ == "__main__":
+    cmdline_main()
