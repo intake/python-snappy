@@ -48,6 +48,7 @@ from _snappy import CompressError, CompressedLengthError, \
                     _crc32c
 
 _CHUNK_MAX = 32768
+_STREAM_TO_STREAM_BLOCK_SIZE = _CHUNK_MAX
 _STREAM_IDENTIFIER = b"sNaPpY"
 _COMPRESSED_CHUNK = 0x00
 _UNCOMPRESSED_CHUNK = 0x01
@@ -225,7 +226,7 @@ class StreamDecompressor(object):
         return copy
 
 
-def stream_compress(src, dst, blocksize=16384):
+def stream_compress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, compresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
@@ -240,7 +241,7 @@ def stream_compress(src, dst, blocksize=16384):
         if buf: dst.write(buf)
 
 
-def stream_decompress(src, dst, blocksize=16384):
+def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, decompresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
