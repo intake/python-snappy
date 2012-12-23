@@ -259,7 +259,7 @@ def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
 
 def cmdline_main():
     """This method is what is run when invoking snappy via the commandline.
-    Try python -msnappy --help
+    Try python -m snappy --help
     """
     import sys
     if (len(sys.argv) < 2 or len(sys.argv) > 4 or "--help" in sys.argv or
