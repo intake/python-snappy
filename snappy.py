@@ -47,7 +47,7 @@ from _snappy import CompressError, CompressedLengthError, \
                     compress, decompress, isValidCompressed, uncompress, \
                     _crc32c
 
-_CHUNK_MAX = 32768
+_CHUNK_MAX = 65536
 _STREAM_TO_STREAM_BLOCK_SIZE = _CHUNK_MAX
 _STREAM_IDENTIFIER = b"sNaPpY"
 _COMPRESSED_CHUNK = 0x00
@@ -104,8 +104,8 @@ class StreamCompressor(object):
         """
         if not self._header_chunk_written:
             self._header_chunk_written = True
-            out = [struct.pack("<BH", _IDENTIFIER_CHUNK,
-                               len(_STREAM_IDENTIFIER)),
+            out = [struct.pack("<B", _IDENTIFIER_CHUNK),
+                   struct.pack("<L", len(_STREAM_IDENTIFIER))[:-1],
                    _STREAM_IDENTIFIER]
         else:
             out = []
@@ -126,8 +126,10 @@ class StreamCompressor(object):
                 chunk_type = _COMPRESSED_CHUNK
             else:
                 chunk_type = _UNCOMPRESSED_CHUNK
-            out.append(struct.pack("<BHL", chunk_type, len(chunk) + 4, crc))
-            out.append(chunk)
+            out.extend([struct.pack("<B", chunk_type),
+                        struct.pack("<L", len(chunk) + 4)[:-1],
+                        struct.pack("<L", crc),
+                        chunk])
         return b"".join(out)
 
     def compress(self, data):
@@ -180,11 +182,12 @@ class StreamDecompressor(object):
         self._buf += data
         uncompressed = []
         while True:
-            if len(self._buf) < 3:
+            if len(self._buf) < 4:
                 return b"".join(uncompressed)
-            chunk_type, size = struct.unpack("<BH", self._buf[:3])
+            chunk_type = struct.unpack("<B", self._buf[:1])[0]
+            size = struct.unpack("<L", self._buf[1:4] + "\0")[0]
             if not self._header_found:
-                if (chunk_type != _IDENTIFIER_CHUNK and
+                if (chunk_type != _IDENTIFIER_CHUNK or
                         size != len(_STREAM_IDENTIFIER)):
                     raise UncompressError("stream missing snappy identifier")
                 self._header_found = True
@@ -192,13 +195,16 @@ class StreamDecompressor(object):
                     chunk_type < _RESERVED_UNSKIPPABLE[1]):
                 raise UncompressError(
                     "stream received unskippable but unknown chunk")
-            if len(self._buf) < 3 + size:
+            if len(self._buf) < 4 + size:
                 return b"".join(uncompressed)
-            chunk, self._buf = self._buf[3:3 + size], self._buf[3 + size:]
+            chunk, self._buf = self._buf[4:4 + size], self._buf[4 + size:]
+            if chunk_type == _IDENTIFIER_CHUNK and chunk != _STREAM_IDENTIFIER:
+                raise UncompressError("stream has invalid snappy identifier")
             if (_RESERVED_SKIPPABLE[0] <= chunk_type and
                     chunk_type < _RESERVED_SKIPPABLE[1]):
                 continue
-            assert chunk_type in (_COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK)
+            if chunk_type not in (_COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK):
+                raise UncompressError("internal error")
             crc, chunk = chunk[:4], chunk[4:]
             if chunk_type == _COMPRESSED_CHUNK:
                 chunk = _uncompress(chunk)
