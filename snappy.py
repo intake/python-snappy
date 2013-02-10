@@ -54,7 +54,7 @@ _COMPRESSED_CHUNK = 0x00
 _UNCOMPRESSED_CHUNK = 0x01
 _IDENTIFIER_CHUNK = 0xff
 _RESERVED_UNSKIPPABLE = (0x02, 0x80)  # chunk ranges are [inclusive, exclusive)
-_RESERVED_SKIPPABLE = (0x80, 0x100)
+_RESERVED_SKIPPABLE = (0x80, 0xff)
 
 # the minimum percent of bytes compression must save to be enabled in automatic
 # mode
@@ -198,13 +198,15 @@ class StreamDecompressor(object):
             if len(self._buf) < 4 + size:
                 return b"".join(uncompressed)
             chunk, self._buf = self._buf[4:4 + size], self._buf[4 + size:]
-            if chunk_type == _IDENTIFIER_CHUNK and chunk != _STREAM_IDENTIFIER:
-                raise UncompressError("stream has invalid snappy identifier")
+            if chunk_type == _IDENTIFIER_CHUNK:
+                if chunk != _STREAM_IDENTIFIER:
+                    raise UncompressError(
+                        "stream has invalid snappy identifier")
+                continue
             if (_RESERVED_SKIPPABLE[0] <= chunk_type and
                     chunk_type < _RESERVED_SKIPPABLE[1]):
                 continue
-            if chunk_type not in (_COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK):
-                raise UncompressError("internal error")
+            assert chunk_type in (_COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK)
             crc, chunk = chunk[:4], chunk[4:]
             if chunk_type == _COMPRESSED_CHUNK:
                 chunk = _uncompress(chunk)
