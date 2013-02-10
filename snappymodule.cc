@@ -29,6 +29,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <string.h>
 #include <stdio.h>
 #include <snappy-c.h>
+#include "crc32c.h"
 
 #define MODULE_VERSION "0.4.1"
 #define RESIZE_TOLERATION 0.75
@@ -117,10 +118,12 @@ snappy__compress(PyObject *self, PyObject *args)
         else {
             Py_DECREF(result);
         }
+        PyErr_Format(SnappyCompressError,
+    		 "Error while compressing: %s", snappy_strerror(status));
     }
 
     PyErr_Format(SnappyCompressError,
-		 "Error while compressing: %s", snappy_strerror(status));
+		 "Error while compressing: unable to acquire output string");
     return NULL;
 }
 
@@ -180,6 +183,23 @@ snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
     Py_RETURN_FALSE;
 }
 
+static PyObject *
+snappy__crc32c(PyObject *self, PyObject *args)
+{
+    const unsigned char * input;
+    int input_size;
+
+#if PY_MAJOR_VERSION >= 3
+    if (!PyArg_ParseTuple(args, "y#", &input, &input_size))
+#else
+    if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
+#endif
+        return NULL;
+
+    return PyLong_FromUnsignedLong(
+            crc_finalize(crc_update(crc_init(), input, input_size)));
+}
+
 static PyMethodDef snappy_methods[] = {
     {"compress",  snappy__compress, METH_VARARGS,
         "Compress a string using the snappy library."},
@@ -189,6 +209,8 @@ static PyMethodDef snappy_methods[] = {
         "Alias to Uncompress method, to be compatible with zlib."},
     {"isValidCompressed",  snappy__is_valid_compressed_buffer, METH_VARARGS,
         "Returns True if the compressed buffer is valid, False otherwise"},
+    {"_crc32c",  snappy__crc32c, METH_VARARGS,
+        "Generate an RFC3720, section 12.1 CRC-32C"},
     {NULL, NULL, 0, NULL}        /* Sentinel */
 };
 
@@ -207,7 +229,7 @@ static int snappy_clear(PyObject *m) {
 
 static struct PyModuleDef moduledef = {
     PyModuleDef_HEAD_INIT,
-    "snappy",
+    "_snappy",
     NULL,
     sizeof(struct module_state),
     snappy_methods,
@@ -221,13 +243,13 @@ static struct PyModuleDef moduledef = {
 #define INITERROR return NULL
 
 PyMODINIT_FUNC
-PyInit_snappy(void)
+PyInit__snappy(void)
 
 #else
 #define INITERROR return
 
 PyMODINIT_FUNC
-initsnappy(void)
+init_snappy(void)
 #endif
 {
     PyObject *m;
@@ -235,7 +257,7 @@ initsnappy(void)
     #if PY_MAJOR_VERSION >= 3
     m = PyModule_Create(&moduledef);
     #else
-    m = Py_InitModule("snappy", snappy_methods);
+    m = Py_InitModule("_snappy", snappy_methods);
     #endif
 
     if (m == NULL)
@@ -269,4 +291,3 @@ initsnappy(void)
     return m;
 #endif
 }
-
