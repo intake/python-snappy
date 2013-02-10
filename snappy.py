@@ -104,8 +104,8 @@ class StreamCompressor(object):
         """
         if not self._header_chunk_written:
             self._header_chunk_written = True
-            out = [struct.pack("<B", _IDENTIFIER_CHUNK),
-                   struct.pack("<L", len(_STREAM_IDENTIFIER))[:-1],
+            out = [struct.pack("<L", _IDENTIFIER_CHUNK +
+                                      (len(_STREAM_IDENTIFIER) << 8)),
                    _STREAM_IDENTIFIER]
         else:
             out = []
@@ -126,10 +126,9 @@ class StreamCompressor(object):
                 chunk_type = _COMPRESSED_CHUNK
             else:
                 chunk_type = _UNCOMPRESSED_CHUNK
-            out.extend([struct.pack("<B", chunk_type),
-                        struct.pack("<L", len(chunk) + 4)[:-1],
-                        struct.pack("<L", crc),
-                        chunk])
+            out.append(struct.pack("<LL", chunk_type + ((len(chunk) + 4) << 8),
+                                   crc))
+            out.append(chunk)
         return b"".join(out)
 
     def compress(self, data):
@@ -184,8 +183,9 @@ class StreamDecompressor(object):
         while True:
             if len(self._buf) < 4:
                 return b"".join(uncompressed)
-            chunk_type = struct.unpack("<B", self._buf[:1])[0]
-            size = struct.unpack("<L", self._buf[1:4] + "\0")[0]
+            chunk_type = struct.unpack("<L", self._buf[:4])[0]
+            size = (chunk_type >> 8)
+            chunk_type &= 0xff
             if not self._header_found:
                 if (chunk_type != _IDENTIFIER_CHUNK or
                         size != len(_STREAM_IDENTIFIER)):
