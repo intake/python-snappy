@@ -33,6 +33,7 @@ import snappy
 import struct
 from unittest import TestCase
 
+
 class SnappyCompressionTest(TestCase):
 
     def test_simple_compress(self):
@@ -77,6 +78,7 @@ class SnappyCompressionTest(TestCase):
         compressed = snappy.compress(text)
         self.assertEqual(text, snappy.decompress(compressed))
 
+
 class SnappyValidBufferTest(TestCase):
 
     def test_valid_compressed_buffer(self):
@@ -89,6 +91,7 @@ class SnappyValidBufferTest(TestCase):
     def test_invalid_compressed_buffer(self):
         self.assertFalse(snappy.isValidCompressed(
                 "not compressed".encode('utf-8')))
+
 
 class SnappyStreaming(TestCase):
 
@@ -187,6 +190,20 @@ class SnappyStreaming(TestCase):
                     b"\x00\x0a\x00\x00" + real_crc + compressed_data),
                 data)
 
+        # test that we buffer when we don't have enough
+        uncompressed_data = os.urandom(100)
+        compressor = snappy.StreamCompressor()
+        compressed_data = (compressor.compress(uncompressed_data[:50]) +
+                           compressor.compress(uncompressed_data[50:]))
+        for split1 in range(len(compressed_data) - 1):
+            for split2 in range(split1, len(compressed_data)):
+                decompressor = snappy.StreamDecompressor()
+                self.assertEqual(
+                    (decompressor.decompress(compressed_data[:split1]) +
+                     decompressor.decompress(compressed_data[split1:split2]) +
+                     decompressor.decompress(compressed_data[split2:])),
+                    uncompressed_data)
+
     def test_concatenation(self):
         data1 = os.urandom(snappy._CHUNK_MAX * 2)
         data2 = os.urandom(4096)
@@ -196,6 +213,7 @@ class SnappyStreaming(TestCase):
                     snappy.StreamCompressor().compress(data1) +
                     snappy.StreamCompressor().compress(data2)),
                 data1 + data2)
+
 
 if __name__ == "__main__":
     import unittest
