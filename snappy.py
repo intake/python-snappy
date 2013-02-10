@@ -75,7 +75,7 @@ class StreamCompressor(object):
     format, found at
 
         http://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
-            ?spec=svn68&r=55
+            ?spec=svn68&r=71
 
     This class matches the interface found for the zlib module's compression
     objects (see zlib.compressobj), but also provides some additions, such as
@@ -157,7 +157,7 @@ class StreamDecompressor(object):
     framing format, found at
 
         http://code.google.com/p/snappy/source/browse/trunk/framing_format.txt
-            ?spec=svn68&r=55
+            ?spec=svn68&r=71
 
     This class matches a subset of the interface found for the zlib module's
     decompression objects (see zlib.decompressobj). Specifically, it currently
