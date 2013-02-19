@@ -34,18 +34,17 @@ More details about Snappy library: http://code.google.com/p/snappy
 """
 
 
-snappymodule = Extension('snappy',
+snappymodule = Extension('_snappy',
                          libraries=['snappy'],
                          language='c++',
                          sources=['snappymodule.cc'])
 ext_modules = [snappymodule]
-packages = []
+packages = ['.']
 install_requires = []
 
 if 'PyPy' in sys.version:
     from setuptools import setup
     ext_modules = []
-    packages = ['.']
     install_requires = ['cffi']
 
 

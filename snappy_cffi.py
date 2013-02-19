@@ -1,3 +1,5 @@
+import sys
+
 from cffi import FFI
 
 ffi = FFI()
@@ -43,6 +45,11 @@ class UncompressError(Exception):
 
 class SnappyBufferSmallError(Exception):
     pass
+
+py3k = False
+if sys.hexversion > 0x03000000:
+    unicode = str
+    py3k = True
 
 class DataWrapper(object):
     def __init__(self, void_p, size, unicode=False):
@@ -132,6 +139,9 @@ def uncompress(data):
 
 
 def isValidCompressed(data):
+    if isinstance(data, unicode):
+        data = data.encode('utf-8')
+
     _out_data, _out_size, _ = _check_data(data)
 
     rc = C.snappy_validate_compressed_buffer(_out_data, _out_size)

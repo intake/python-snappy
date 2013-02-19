@@ -24,50 +24,46 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-try:
-    import snappy_cffi as snappy
-except ImportError:
-    import snappy
+import snappy
 from unittest import TestCase
 
 class SnappyCompressionTest(TestCase):
-
     def test_simple_compress(self):
-        text = "hello world!"
+        text = b"hello world!"
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.uncompress(compressed))
 
     def test_moredata_compress(self):
-        text = "snappy +" * 1000 + " " + "by " * 1000 + " google"
+        text = b"snappy +" * 1000 + b" " + b"by " * 1000 + b" google"
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.uncompress(compressed))
 
     def test_randombytes_compress(self):
-        _bytes = repr(os.urandom(1000))
+        _bytes = os.urandom(1000)
         compressed = snappy.compress(_bytes)
         self.assertEquals(_bytes, snappy.uncompress(compressed))
 
     def test_randombytes2_compress(self):
-        _bytes = str(os.urandom(10000))
+        _bytes = os.urandom(10000)
         compressed = snappy.compress(_bytes)
         self.assertEquals(_bytes, snappy.uncompress(compressed))
 
     def test_uncompress_error(self):
-        self.assertRaises(snappy.UncompressError, snappy.uncompress, "hoa")
+        self.assertRaises(snappy.UncompressError, snappy.uncompress, b"hoa")
 
     def test_unicode_compress(self):
         text = u"hello unicode world!"
-        compressed = snappy.compress(text)
-        self.assertEquals(text, snappy.uncompress(compressed))
+        compressed = snappy.compress(text, encoding='utf-8')
+        self.assertEquals(text, snappy.uncompress(compressed, decoding='utf-8'))
 
     def test_decompress(self):
         # decompress == uncompress, just to support compatibility with zlib
-        text = "hello world!"
+        text = b"hello world!"
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.decompress(compressed))
 
     def test_big_string(self):
-        text = 'a'*10000000
+        text = b'a'*10000000
         compressed = snappy.compress(text)
         self.assertEquals(text, snappy.decompress(compressed))
 
@@ -75,13 +71,13 @@ class SnappyCompressionTest(TestCase):
 class SnappyValidBufferTest(TestCase):
 
     def test_valid_compressed_buffer(self):
-        text = "hello world!"
+        text = b"hello world!"
         compressed = snappy.compress(text)
         uncompressed = snappy.uncompress(compressed)
         self.assertEquals(text == uncompressed, snappy.isValidCompressed(compressed))
 
     def test_invalid_compressed_buffer(self):
-        self.assertFalse(snappy.isValidCompressed("not compressed"))
+        self.assertFalse(snappy.isValidCompressed(b"not compressed"))
 
 if __name__ == "__main__":
     # in case nose is not installed

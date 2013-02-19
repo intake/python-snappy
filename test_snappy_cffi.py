@@ -1,3 +1,10 @@
+import sys
+
+py3k = False
+if sys.hexversion > 0x02070000:
+    unicode = str
+    py3k = True
+
 def test_snappy_cffi_enum():
     from snappy_cffi import C
 
@@ -9,9 +16,9 @@ def test_snappy_all_cffi():
     from snappy_cffi import ffi, C
 
     import os
-    data = repr(os.urandom(100000)) #'string to be compressed'
+    data = 'string to be compressed'
 
-    _input_data = ffi.new('char[]', data)
+    _input_data = ffi.new('char[]', data.encode('utf-8'))
     _input_size =  ffi.cast('size_t', len(_input_data))
 
     max_compressed = C.snappy_max_compressed_length(_input_size)
@@ -39,4 +46,9 @@ def test_snappy_all_cffi():
     rc = C.snappy_uncompress(_out_data, _out_size[0], _uncompressed_data, result)
 
     assert C.SNAPPY_OK == rc
-    assert data == ffi.string(_uncompressed_data, result[0])
+
+    result = ffi.string(_uncompressed_data, result[0])
+    if py3k:
+        result = result.decode('utf-8')
+
+    assert data == result
