@@ -9,4 +9,7 @@ Contributors:
    Improved support for Python 3.X, and improved the library 
    by removing unncesaries memomry allocation:
    - https://github.com/andrix/python-snappy/pull/8
+ * JT Olds <jt@spacemonkey.com>
+   Added Snappy framing format support, improve Py3K support
+   - https://github.com/andrix/python-snappy/pull/14
 
