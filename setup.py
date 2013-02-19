@@ -40,10 +40,13 @@ snappymodule = Extension('snappy',
                          sources=['snappymodule.cc'])
 ext_modules = [snappymodule]
 packages = []
+install_requires = []
 
 if 'PyPy' in sys.version:
+    from setuptools import setup
     ext_modules = []
     packages = ['.']
+    install_requires = ['cffi']
 
 
 setup(
@@ -76,6 +79,7 @@ setup(
                  'Programming Language :: Python :: 3.2',
                  ],
     ext_modules = ext_modules,
-    packages = packages
+    packages = packages,
+    install_requires = install_requires
 )
 
