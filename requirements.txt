@@ -1,3 +1,0 @@
-cffi
-py
-nose
