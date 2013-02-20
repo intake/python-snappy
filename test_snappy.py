@@ -35,7 +35,6 @@ from unittest import TestCase
 
 
 class SnappyCompressionTest(TestCase):
-
     def test_simple_compress(self):
         text = "hello world!".encode('utf-8')
         compressed = snappy.compress(text)
@@ -94,7 +93,6 @@ class SnappyValidBufferTest(TestCase):
 
 
 class SnappyStreaming(TestCase):
-
     def test_random(self):
         for _ in range(100):
             compressor = snappy.StreamCompressor()

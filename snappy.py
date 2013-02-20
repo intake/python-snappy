@@ -40,12 +40,47 @@ Expected usage like:
 
 """
 
+import sys
 import struct
 
-from _snappy import CompressError, CompressedLengthError, \
-                    InvalidCompressedInputError, UncompressError, \
-                    compress, decompress, isValidCompressed, uncompress, \
-                    _crc32c
+
+try:
+    from _snappy import UncompressError, compress, decompress, \
+                        isValidCompressed, uncompress, _crc32c
+
+
+except ImportError:
+    from snappy_cffi import UncompressError, compress, decompress, \
+                            isValidCompressed, uncompress, _crc32c
+
+
+_compress = compress
+_uncompress = uncompress
+
+
+py3k = False
+if sys.hexversion > 0x03000000:
+    unicode = str
+    py3k = True
+
+
+def compress(data, encoding='utf-8'):
+    if isinstance(data, unicode):
+        data = data.encode(encoding)
+
+    return _compress(data)
+
+
+def uncompress(data, decoding=None):
+    if isinstance(data, unicode):
+        raise UncompressError("It's only possible to uncompress bytes")
+    if decoding:
+        return _uncompress(data).decode(decoding)
+    return _uncompress(data)
+
+
+decompress = uncompress
+
 
 _CHUNK_MAX = 65536
 _STREAM_TO_STREAM_BLOCK_SIZE = _CHUNK_MAX
@@ -53,20 +88,18 @@ _STREAM_IDENTIFIER = b"sNaPpY"
 _COMPRESSED_CHUNK = 0x00
 _UNCOMPRESSED_CHUNK = 0x01
 _IDENTIFIER_CHUNK = 0xff
-_RESERVED_UNSKIPPABLE = (0x02, 0x80)  # chunk ranges are [inclusive, exclusive)
+_RESERVED_UNSKIPPABLE = (0x02, 0x80)  # chunk ranges are [inclusive, exclusive]
 _RESERVED_SKIPPABLE = (0x80, 0xff)
 
-# the minimum percent of bytes compression must save to be enabled in automatic
-# mode
+# the minimum percent of bytes compression must save to be enabled in
+# automatic mode
 _COMPRESSION_THRESHOLD = .125
+
 
 def _masked_crc32c(data):
     # see the framing format specification
     crc = _crc32c(data)
     return (((crc >> 15) | (crc << 17)) + 0xa282ead8) & 0xffffffff
-
-_compress = compress
-_uncompress = uncompress
 
 
 class StreamCompressor(object):
@@ -105,8 +138,8 @@ class StreamCompressor(object):
         if not self._header_chunk_written:
             self._header_chunk_written = True
             out = [struct.pack("<L", _IDENTIFIER_CHUNK +
-                                      (len(_STREAM_IDENTIFIER) << 8)),
-                   _STREAM_IDENTIFIER]
+                                    (len(_STREAM_IDENTIFIER) << 8)),
+                _STREAM_IDENTIFIER]
         else:
             out = []
         for i in range(0, len(data), _CHUNK_MAX):
@@ -127,7 +160,7 @@ class StreamCompressor(object):
             else:
                 chunk_type = _UNCOMPRESSED_CHUNK
             out.append(struct.pack("<LL", chunk_type + ((len(chunk) + 4) << 8),
-                                   crc))
+                                crc))
             out.append(chunk)
         return b"".join(out)
 

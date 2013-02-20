@@ -174,7 +174,11 @@ snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
     int comp_size;
     snappy_status status;
 
+#if PY_MAJOR_VERSION >=3
+    if (!PyArg_ParseTuple(args, "y#", &compressed, &comp_size))
+#else
     if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
+#endif
         return NULL;
 
     status = snappy_validate_compressed_buffer(compressed, comp_size);

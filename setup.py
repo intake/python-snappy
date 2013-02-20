@@ -23,6 +23,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+import sys
 from distutils.core import setup, Extension
 
 version = '0.5'
@@ -36,6 +37,15 @@ More details about Snappy library: http://code.google.com/p/snappy
 snappymodule = Extension('_snappy',
                          libraries=['snappy'],
                          sources=['snappymodule.cc', 'crc32c.c'])
+
+ext_modules = [snappymodule]
+packages = ['.']
+install_requires = []
+
+if 'PyPy' in sys.version:
+    from setuptools import setup
+    ext_modules = []
+    install_requires = ['cffi']
 
 setup(
     name='python-snappy',
@@ -66,6 +76,7 @@ setup(
                  'Programming Language :: Python :: 3.1',
                  'Programming Language :: Python :: 3.2',
                  ],
-    py_modules=['snappy'],
-    ext_modules=[snappymodule]
+    ext_modules = ext_modules,
+    packages = packages,
+    install_requires = install_requires
 )
