@@ -93,12 +93,6 @@ class SnappyValidBufferTest(TestCase):
 
 
 class SnappyStreaming(TestCase):
-    def setUp(self):
-        import sys
-        from nose import SkipTest
-        if 'PyPy' in sys.version:
-            raise SkipTest()
-
     def test_random(self):
         for _ in range(100):
             compressor = snappy.StreamCompressor()

@@ -52,3 +52,13 @@ def test_snappy_all_cffi():
         result = result.decode('utf-8')
 
     assert data == result
+
+def test_crc32_cffi():
+    from snappy_cffi import ffi, C
+
+    assert C._crc32c
+
+    data = ffi.new('char[]', b'hello')
+    size = len(b'hello')
+
+    assert C._crc32c(data, size)
