@@ -40,12 +40,15 @@ Expected usage like:
 
 """
 
+import sys
 import struct
 
-from _snappy import CompressError, CompressedLengthError, \
-                    InvalidCompressedInputError, UncompressError, \
-                    compress, decompress, isValidCompressed, uncompress, \
-                    _crc32c
+try:
+    from _snappy import UncompressError, compress, decompress, \
+                        isValidCompressed, uncompress, _crc32c
+except ImportError:
+    from snappy_cffi import UncompressError, compress, decompress, \
+                            isValidCompressed, uncompress, _crc32c
 
 _CHUNK_MAX = 65536
 _STREAM_TO_STREAM_BLOCK_SIZE = _CHUNK_MAX
@@ -67,6 +70,27 @@ def _masked_crc32c(data):
 
 _compress = compress
 _uncompress = uncompress
+
+
+py3k = False
+if sys.hexversion > 0x03000000:
+    unicode = str
+    py3k = True
+
+def compress(data, encoding='utf-8'):
+    if isinstance(data, unicode):
+        data = data.encode(encoding)
+
+    return _compress(data)
+
+def uncompress(data, decoding=None):
+    if isinstance(data, unicode):
+        raise UncompressError("It's only possible to uncompress bytes")
+    if decoding:
+        return _uncompress(data).decode(decoding)
+    return _uncompress(data)
+
+decompress = uncompress
 
 
 class StreamCompressor(object):
