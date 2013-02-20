@@ -35,7 +35,6 @@ from unittest import TestCase
 
 
 class SnappyCompressionTest(TestCase):
-
     def test_simple_compress(self):
         text = "hello world!".encode('utf-8')
         compressed = snappy.compress(text)
