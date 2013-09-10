@@ -11,6 +11,10 @@ Dependencies
 * snappy library >= 1.0.2 (or revision 27)
   http://code.google.com/p/snappy/
 
+To use with pypy:
+* cffi >= 0.7
+  http://cffi.readthedocs.org/
+
 * Supports Python 2.7 and Python 3
 
 Build & Install
@@ -40,7 +44,11 @@ Run tests
 
 ::
 
+  # run python snappy tests
   nosetest test_snappy.py
+
+  # support for cffi backend
+  nosetest test_snappy_cffi.py
 
 Benchmarks
 ==========
