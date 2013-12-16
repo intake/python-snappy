@@ -24,7 +24,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-from distutils.core import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
 
 version = '0.5'
 long_description = """
@@ -35,17 +38,21 @@ More details about Snappy library: http://code.google.com/p/snappy
 
 
 snappymodule = Extension('_snappy',
-                         libraries=['snappy'],
                          sources=['snappymodule.cc', 'crc32c.c'])
 
 ext_modules = [snappymodule]
-packages = ['.']
 install_requires = []
+cmdclass = {}
 
 if 'PyPy' in sys.version:
     from setuptools import setup
     ext_modules = []
     install_requires = ['cffi']
+else:
+    from buildutils import snappy_build_ext, snappy_sdist
+    cmdclass = {'build_ext': snappy_build_ext,
+                'sdist': snappy_sdist}
+
 
 setup(
     name='python-snappy',
@@ -77,6 +84,6 @@ setup(
                  'Programming Language :: Python :: 3.2',
                  ],
     ext_modules = ext_modules,
-    packages = packages,
+    cmdclass = cmdclass,
     install_requires = install_requires
 )

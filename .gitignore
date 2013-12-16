@@ -2,4 +2,9 @@
 build
 dist
 MANIFEST
-
+*.so
+deps
+*.egg-info
+.tox
+tmp/
+__pycache__/
