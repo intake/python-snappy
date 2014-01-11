@@ -12,6 +12,7 @@ Dependencies
   http://code.google.com/p/snappy/
 
 To use with pypy:
+
 * cffi >= 0.7
   http://cffi.readthedocs.org/
 
