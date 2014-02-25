@@ -24,7 +24,7 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-from distutils.core import setup, Extension
+from setuptools import setup, Extension
 
 version = '0.5'
 long_description = """
@@ -42,7 +42,6 @@ ext_modules = [snappymodule]
 install_requires = []
 
 if 'PyPy' in sys.version:
-    from setuptools import setup
     ext_modules = []
     install_requires = ['cffi']
 
