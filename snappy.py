@@ -267,10 +267,9 @@ def stream_compress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
     """
     compressor = StreamCompressor()
     while True:
-        buf = src.read(blocksize)
+        buf = compressor.add_chunk(src.read(blocksize))
         if not buf: break
-        buf = compressor.add_chunk(buf)
-        if buf: dst.write(buf)
+        dst.write(buf)
 
 
 def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
