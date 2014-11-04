@@ -113,3 +113,16 @@ You can get help by running
 
 Snappy - compression library from Google (c)
  http://code.google.com/p/snappy
+ 
+Frequently Asked Questions
+==========================
+ 
+**How to install it on Mac OS X?**
+
+It has been reported a few times (Issue #7 and #23) that it can't be installed correctly the library in Mac. 
+The procedure should be,
+
+::
+
+    $ brew install snappy # snappy library from Google 
+    $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
