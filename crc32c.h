@@ -53,7 +53,11 @@ crc_t crc_reflect(crc_t data, size_t data_len);
  *
  * \return     The initial crc value.
  *****************************************************************************/
+#ifdef _MSC_VER
+static __inline crc_t crc_init(void)
+#else
 static inline crc_t crc_init(void)
+#endif
 {
     return 0xffffffff;
 }
@@ -76,7 +80,11 @@ crc_t crc_update(crc_t crc, const unsigned char *data, size_t data_len);
  * \param crc  The current crc value.
  * \return     The final crc value.
  *****************************************************************************/
+#ifdef _MSC_VER
+static __inline crc_t crc_finalize(crc_t crc)
+#else
 static inline crc_t crc_finalize(crc_t crc)
+#endif
 {
     return crc ^ 0xffffffff;
 }
