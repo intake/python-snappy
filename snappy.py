@@ -370,16 +370,28 @@ def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
     decompressor.flush()  # makes sure the stream ended well
 
 
+def hadoop_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
+    decompressor = HadoopStreamDecompressor()
+    while True:
+        buf = src.read(blocksize)
+        if not buf: break
+        buf = decompressor.decompress(buf)
+        if buf: dst.write(buf)
+    decompressor.flush()  # makes sure the stream ended well
+
+
+
 def cmdline_main():
     """This method is what is run when invoking snappy via the commandline.
     Try python -m snappy --help
     """
     import sys
     if (len(sys.argv) < 2 or len(sys.argv) > 4 or "--help" in sys.argv or
-            "-h" in sys.argv or sys.argv[1] not in ("-c", "-d")):
+            "-h" in sys.argv or sys.argv[1] not in ("-c", "-d", "-q")):
         print("Usage: python -m snappy <-c/-d> [src [dst]]")
         print("             -c      compress")
         print("             -d      decompress")
+        print("             -q      hadoop decompress")
         print("output is stdout if dst is omitted or '-'")
         print("input is stdin if src and dst are omitted or src is '-'.")
         sys.exit(1)
@@ -400,8 +412,10 @@ def cmdline_main():
 
     if sys.argv[1] == "-c":
         method = stream_compress
-    else:
+    elif sys.argv[1] == '-d':
         method = stream_decompress
+    else:
+        method = hadoop_decompress
 
     method(src, dst)
 
