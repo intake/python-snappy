@@ -1,1 +1,1 @@
-include *.py AUTHORS README.rst *.h MANIFEST.in
+include *.py AUTHORS README.rst *.h MANIFEST.in LICENSE
