@@ -111,7 +111,9 @@ snappy__compress(PyObject *self, PyObject *args)
     result = PyBytes_FromStringAndSize(NULL, compressed_size);
     if (result) {
         actual_size = compressed_size;
+        Py_BEGIN_ALLOW_THREADS
         status = snappy_compress(input, input_size, PyBytes_AS_STRING(result), &actual_size);
+        Py_END_ALLOW_THREADS
         if (status == SNAPPY_OK) {
             return maybe_resize(result, compressed_size, actual_size);
         }
@@ -153,7 +155,9 @@ snappy__uncompress(PyObject *self, PyObject *args)
     result = PyBytes_FromStringAndSize(NULL, uncomp_size);
     if (result) {
         actual_size = uncomp_size;
+        Py_BEGIN_ALLOW_THREADS
         status = snappy_uncompress(compressed, comp_size, PyBytes_AS_STRING(result), &actual_size);
+        Py_END_ALLOW_THREADS
         if (SNAPPY_OK == status) {
             return maybe_resize(result, uncomp_size, actual_size);
         }
