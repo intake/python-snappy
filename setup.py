@@ -26,7 +26,7 @@
 import sys
 from distutils.core import setup, Extension
 
-version = '0.5'
+version = '0.5.1'
 long_description = """
 Python bindings for the snappy compression library from Google.
 
@@ -68,13 +68,10 @@ setup(
                  'Operating System :: MacOS :: MacOS X',
                  # 'Operating System :: Microsoft :: Windows', -- Not tested yet
                  'Operating System :: POSIX',
-                 'Programming Language :: Python :: 2.5',
-                 'Programming Language :: Python :: 2.6',
                  'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.0',
-                 'Programming Language :: Python :: 3.1',
-                 'Programming Language :: Python :: 3.2',
+                 'Programming Language :: Python :: 3.5',
+                 'Programming Language :: Python :: 3.6',
                  ],
     ext_modules = ext_modules,
     packages = packages,
