@@ -323,7 +323,3 @@ def cmdline_main():
         method = stream_decompress
 
     method(src, dst)
-
-
-if __name__ == "__main__":
-    cmdline_main()
