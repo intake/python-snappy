@@ -1,0 +1,11 @@
+python-snappy (0.4-1) unstable; urgency=low
+
+  * New upstream release
+
+ -- Shell Xu <shell909090@gmail.com>  Sun, 29 Apr 2012 13:46:11 +0800
+
+python-snappy (0.3.2-1) unstable; urgency=low
+
+  * Initial release (Closes: 647197)
+
+ -- Shell Xu <shell909090@gmail.com>  Mon, 31 Oct 2011 17:36:12 +0800
