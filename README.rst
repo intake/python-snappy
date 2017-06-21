@@ -126,3 +126,22 @@ The procedure should be,
 
     $ brew install snappy # snappy library from Google 
     $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
+
+**How to install it for Vagrant?**
+
+Using the provision method, put the following scripts into Vagrantfile. For example of using the box of 'ubuntu/xenial64'
+
+::
+
+    config.vm.provision "shell", inline: <<-SHELL
+      sudo apt-get update && apt-get -y upgrade
+      sudo apt-get install -y git python-pip cmake gcc g++ python-snappy
+      sudo pip install --upgrade pip
+      
+      git clone https://github.com/google/snappy.git
+      cd snappy
+      mkdir build && cd build
+      cmake ../ && make && sudo make install
+
+      sudo pip install python-snappy
+    SHELL
