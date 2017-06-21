@@ -132,6 +132,7 @@ The procedure should be,
 Using the provision method, put the following scripts into Vagrantfile. For example of using the box of 'ubuntu/xenial64'
 
 ::
+
     config.vm.provision "shell", inline: <<-SHELL
       sudo apt-get update && apt-get -y upgrade
       sudo apt-get install -y git python-pip cmake gcc g++ python-snappy
