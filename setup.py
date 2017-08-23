@@ -26,7 +26,7 @@
 import sys
 from distutils.core import setup, Extension
 
-version = '0.5.1'
+version = '0.5.2'
 long_description = """
 Python bindings for the snappy compression library from Google.
 
@@ -39,7 +39,8 @@ snappymodule = Extension('_snappy',
                          sources=['snappymodule.cc', 'crc32c.c'])
 
 ext_modules = [snappymodule]
-packages = ['.']
+packages = ['snappy']
+package_dir = {'snappy': ''}
 install_requires = []
 
 if 'PyPy' in sys.version:
@@ -75,5 +76,6 @@ setup(
                  ],
     ext_modules = ext_modules,
     packages = packages,
+    package_dir = package_dir,
     install_requires = install_requires
 )
