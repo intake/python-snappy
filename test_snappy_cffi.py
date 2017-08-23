@@ -6,14 +6,14 @@ if sys.hexversion > 0x02070000:
     py3k = True
 
 def test_snappy_cffi_enum():
-    from snappy_cffi import C
+    from snappy.snappy_cffi import C
 
     assert 0 == C.SNAPPY_OK
     assert 1 == C.SNAPPY_INVALID_INPUT
     assert 2 == C.SNAPPY_BUFFER_TOO_SMALL
 
 def test_snappy_all_cffi():
-    from snappy_cffi import ffi, C
+    from snappy.snappy_cffi import ffi, C
 
     import os
     data = 'string to be compressed'
