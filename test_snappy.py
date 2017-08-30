@@ -101,12 +101,12 @@ class SnappyStreaming(TestCase):
             data = b""
             compressed = b""
             for _ in range(random.randint(0, 3)):
-                chunk = os.urandom(random.randint(0, snappy._CHUNK_MAX * 2))
+                chunk = os.urandom(random.randint(0, snappy.snappy._CHUNK_MAX * 2))
                 data += chunk
                 compressed += compressor.add_chunk(
                         chunk, compress=random.choice([True, False, None]))
 
-            upper_bound = random.choice([256, snappy._CHUNK_MAX * 2])
+            upper_bound = random.choice([256, snappy.snappy._CHUNK_MAX * 2])
             while compressed:
                 size = random.randint(0, upper_bound)
                 chunk, compressed = compressed[:size], compressed[size:]
@@ -122,7 +122,7 @@ class SnappyStreaming(TestCase):
         compressor = snappy.StreamCompressor()
         data = b"\0" * 50
         compressed_data = snappy.compress(data)
-        crc = struct.pack("<L", snappy._masked_crc32c(data))
+        crc = struct.pack("<L", snappy.snappy._masked_crc32c(data))
         self.assertEqual(crc, b"\x8f)H\xbd")
         self.assertEqual(len(compressed_data), 6)
         self.assertEqual(compressor.add_chunk(data, compress=True),
@@ -131,22 +131,22 @@ class SnappyStreaming(TestCase):
 
         # test that we can add uncompressed chunks
         data = b"\x01" * 50
-        crc = struct.pack("<L", snappy._masked_crc32c(data))
+        crc = struct.pack("<L", snappy.snappy._masked_crc32c(data))
         self.assertEqual(crc, b"\xb2\x14)\x8a")
         self.assertEqual(compressor.add_chunk(data, compress=False),
                          b"\x01\x36\x00\x00" + crc + data)
 
         # test that we can add more data than will fit in one chunk
-        data = b"\x01" * (snappy._CHUNK_MAX * 2 - 5)
+        data = b"\x01" * (snappy.snappy._CHUNK_MAX * 2 - 5)
         crc1 = struct.pack("<L",
-                snappy._masked_crc32c(data[:snappy._CHUNK_MAX]))
+                snappy.snappy._masked_crc32c(data[:snappy.snappy._CHUNK_MAX]))
         self.assertEqual(crc1, b"h#6\x8e")
         crc2 = struct.pack("<L",
-                snappy._masked_crc32c(data[snappy._CHUNK_MAX:]))
+                snappy.snappy._masked_crc32c(data[snappy.snappy._CHUNK_MAX:]))
         self.assertEqual(crc2, b"q\x8foE")
         self.assertEqual(compressor.add_chunk(data, compress=False),
-                b"\x01\x04\x00\x01" + crc1 + data[:snappy._CHUNK_MAX] +
-                b"\x01\xff\xff\x00" + crc2 + data[snappy._CHUNK_MAX:])
+                b"\x01\x04\x00\x01" + crc1 + data[:snappy.snappy._CHUNK_MAX] +
+                b"\x01\xff\xff\x00" + crc2 + data[snappy.snappy._CHUNK_MAX:])
 
     def test_decompression(self):
         # test that we check for the initial stream identifier
@@ -154,19 +154,19 @@ class SnappyStreaming(TestCase):
         self.assertRaises(snappy.UncompressError,
                 snappy.StreamDecompressor().decompress,
                     b"\x01\x36\x00\00" +
-                    struct.pack("<L", snappy._masked_crc32c(data)) + data)
+                    struct.pack("<L", snappy.snappy._masked_crc32c(data)) + data)
         self.assertEqual(
                 snappy.StreamDecompressor().decompress(
                     b"\xff\x06\x00\x00sNaPpY"
                     b"\x01\x36\x00\x00" +
-                    struct.pack("<L", snappy._masked_crc32c(data)) + data),
+                    struct.pack("<L", snappy.snappy._masked_crc32c(data)) + data),
                 data)
         decompressor = snappy.StreamDecompressor()
         decompressor.decompress(b"\xff\x06\x00\x00sNaPpY")
         self.assertEqual(
                 decompressor.copy().decompress(
                     b"\x01\x36\x00\x00" +
-                    struct.pack("<L", snappy._masked_crc32c(data)) + data),
+                    struct.pack("<L", snappy.snappy._masked_crc32c(data)) + data),
                 data)
 
         # test that we throw errors for unknown unskippable chunks
@@ -179,7 +179,7 @@ class SnappyStreaming(TestCase):
 
         # test that we check CRCs
         compressed_data = snappy.compress(data)
-        real_crc = struct.pack("<L", snappy._masked_crc32c(data))
+        real_crc = struct.pack("<L", snappy.snappy._masked_crc32c(data))
         fake_crc = os.urandom(4)
         self.assertRaises(snappy.UncompressError,
                 decompressor.copy().decompress,
@@ -204,7 +204,7 @@ class SnappyStreaming(TestCase):
                     uncompressed_data)
 
     def test_concatenation(self):
-        data1 = os.urandom(snappy._CHUNK_MAX * 2)
+        data1 = os.urandom(snappy.snappy._CHUNK_MAX * 2)
         data2 = os.urandom(4096)
         decompressor = snappy.StreamDecompressor()
         self.assertEqual(

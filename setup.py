@@ -34,13 +34,12 @@ More details about Snappy library: http://code.google.com/p/snappy
 """
 
 
-snappymodule = Extension('_snappy',
+snappymodule = Extension('snappy._snappy',
                          libraries=['snappy'],
-                         sources=['snappymodule.cc', 'crc32c.c'])
+                         sources=['snappy/snappymodule.cc', 'snappy/crc32c.c'])
 
 ext_modules = [snappymodule]
 packages = ['snappy']
-package_dir = {'snappy': ''}
 install_requires = []
 
 if 'PyPy' in sys.version:
@@ -76,6 +75,5 @@ setup(
                  ],
     ext_modules = ext_modules,
     packages = packages,
-    package_dir = package_dir,
     install_requires = install_requires
 )
