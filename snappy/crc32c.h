@@ -19,6 +19,12 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#if defined(_MSC_VER) && !defined(__cplusplus)   /* Visual Studio */
+#ifndef inline
+#define inline __inline  /* Visual C is not C99, but supports some kind of inline */
+#endif
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
