@@ -1,4 +1,4 @@
-from snappy import stream_compress, stream_decompress
+from .snappy import stream_compress, stream_decompress
 
 def cmdline_main():
     """This method is what is run when invoking snappy via the commandline.

@@ -44,11 +44,11 @@ import sys
 import struct
 
 try:
-    from _snappy import UncompressError, compress, decompress, \
-                        isValidCompressed, uncompress, _crc32c
+    from ._snappy import UncompressError, compress, decompress, \
+                         isValidCompressed, uncompress, _crc32c
 except ImportError:
-    from snappy_cffi import UncompressError, compress, decompress, \
-                            isValidCompressed, uncompress, _crc32c
+    from .snappy_cffi import UncompressError, compress, decompress, \
+                             isValidCompressed, uncompress, _crc32c
 
 _CHUNK_MAX = 65536
 _STREAM_TO_STREAM_BLOCK_SIZE = _CHUNK_MAX
