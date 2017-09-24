@@ -76,7 +76,7 @@ setup(
                  'Programming Language :: Python :: 3.5',
                  'Programming Language :: Python :: 3.6',
                  ],
-    ext_modules = ext_modules,
-    packages = packages,
-    install_requires = install_requires
+    ext_modules=ext_modules,
+    packages=packages,
+    install_requires=install_requires
 )
