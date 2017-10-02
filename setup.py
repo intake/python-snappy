@@ -24,7 +24,10 @@
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import sys
-from distutils.core import setup, Extension
+try:
+    from setuptools import setup, Extension
+except ImportError:
+    from distutils.core import setup, Extension
 
 version = '0.5.2'
 long_description = """
@@ -73,7 +76,7 @@ setup(
                  'Programming Language :: Python :: 3.5',
                  'Programming Language :: Python :: 3.6',
                  ],
-    ext_modules = ext_modules,
-    packages = packages,
-    install_requires = install_requires
+    ext_modules=ext_modules,
+    packages=packages,
+    install_requires=install_requires
 )

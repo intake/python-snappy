@@ -1,4 +1,4 @@
-from snappy import (
+from .snappy import (
 	compress,
 	decompress,
 	uncompress,
