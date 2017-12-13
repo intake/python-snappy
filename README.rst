@@ -9,7 +9,13 @@ Dependencies
 ============
 
 * snappy library >= 1.0.2 (or revision 27)
-  http://code.google.com/p/snappy/
+  https://github.com/google/snappy
+
+  You can install Snappy C library with following commands:
+
+  - APT: :code:`sudo apt-get install libsnappy-dev`
+  - RPM: :code:`sudo yum install libsnappy-devel`
+  - Brew:  :code:`brew install snappy`
 
 To use with pypy:
 
