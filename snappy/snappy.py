@@ -258,14 +258,17 @@ class StreamDecompressor(object):
         return copy
 
 
-def stream_compress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
+def stream_compress(src,
+                    dst,
+                    blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
+                    compressor_cls=StreamCompressor):
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, compresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
 
     The default blocksize is good for almost every scenario.
     """
-    compressor = StreamCompressor()
+    compressor = compressor_cls()
     while True:
         buf = src.read(blocksize)
         if not buf: break
@@ -273,14 +276,17 @@ def stream_compress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
         if buf: dst.write(buf)
 
 
-def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
+def stream_decompress(src,
+                      dst,
+                      blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
+                      decompressor_cls=StreamDecompressor):
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, decompresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
 
     The default blocksize is good for almost every scenario.
     """
-    decompressor = StreamDecompressor()
+    decompressor = decompressor_cls()
     while True:
         buf = src.read(blocksize)
         if not buf: break
