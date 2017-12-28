@@ -195,6 +195,25 @@ class StreamDecompressor(object):
         self._buf = b""
         self._header_found = False
 
+    @staticmethod
+    def check_format(data):
+        """Checks that the given data starts with snappy framing format
+        stream identifier.
+        Raises UncompressError if it doesn't start with the identifier.
+        :return: None
+        """
+        if len(data) < 6:
+            raise UncompressError("Too short data length")
+        chunk_type = struct.unpack("<L", data[:4])[0]
+        size = (chunk_type >> 8)
+        chunk_type &= 0xff
+        if (chunk_type != _IDENTIFIER_CHUNK or
+                size != len(_STREAM_IDENTIFIER)):
+            raise UncompressError("stream missing snappy identifier")
+        chunk = data[4:4 + size]
+        if chunk != _STREAM_IDENTIFIER:
+            raise UncompressError("stream has invalid snappy identifier")
+
     def decompress(self, data):
         """Decompress 'data', returning a string containing the uncompressed
         data corresponding to at least part of the data in string. This data
@@ -279,17 +298,41 @@ def stream_compress(src,
 def stream_decompress(src,
                       dst,
                       blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
-                      decompressor_cls=StreamDecompressor):
+                      decompressor_cls=StreamDecompressor,
+                      start_chunk=None):
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, decompresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
 
     The default blocksize is good for almost every scenario.
+    :param decompressor_cls: class that implements `decompress` method like
+        StreamDecompressor in the module
+    :param start_chunk: start block of data that have already been read from
+        the input stream (to detect the format, for example)
     """
     decompressor = decompressor_cls()
     while True:
-        buf = src.read(blocksize)
-        if not buf: break
+        if start_chunk:
+            buf = start_chunk
+            start_chunk = None
+        else:
+            buf = src.read(blocksize)
+            if not buf: break
         buf = decompressor.decompress(buf)
         if buf: dst.write(buf)
     decompressor.flush()  # makes sure the stream ended well
+
+
+def check_format(fin=None, chunk=None,
+                 blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
+                 decompressor_cls=StreamDecompressor):
+    ok = True
+    if chunk is None:
+        chunk = fin.read(blocksize)
+        if not chunk:
+            raise UncompressError("Empty input stream")
+    try:
+        decompressor_cls.check_format(chunk)
+    except UncompressError as err:
+        ok = False
+    return ok, chunk

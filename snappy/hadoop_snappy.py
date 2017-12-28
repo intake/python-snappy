@@ -26,6 +26,7 @@ from .snappy import (
     _compress, _uncompress,
     stream_compress as _stream_compress,
     stream_decompress as _stream_decompress,
+    check_format as _check_format,
     UncompressError,
     _CHUNK_MAX)
 
@@ -112,6 +113,26 @@ class StreamDecompressor(object):
         # total uncompressed data length of the current block
         self._uncompressed_length = 0
 
+    @staticmethod
+    def check_format(data):
+        """Just checks that first two integers (big endian four-bytes int)
+        in the given data block comply to: first int >= second int.
+        This is a simple assumption that we have in the data a start of a
+        block for hadoop snappy format. It should contain uncompressed block
+        length as the first integer, and compressed subblock length as the
+        second integer.
+        Raises UncompressError if the condition is not fulfilled.
+        :return: None
+        """
+        int_size = _INT_SIZE
+        if len(data) < int_size * 2:
+            raise UncompressError("Too short data length")
+        # We cant actually be sure abot the format here.
+        # Assumption that compressed data length is less than uncompressed
+        # is not true in general.
+        # So, just don't check anything
+        return
+
     def decompress(self, data):
         """Decompress 'data', returning a string containing the uncompressed
         data corresponding to at least part of the data in string. This data
@@ -178,8 +199,17 @@ def stream_compress(src, dst, blocksize=SNAPPY_BUFFER_SIZE_DEFAULT):
     )
 
 
-def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
+def stream_decompress(src, dst, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
+                      start_chunk=None):
     return _stream_decompress(
         src, dst, blocksize=blocksize,
+        decompressor_cls=StreamDecompressor,
+        start_chunk=start_chunk
+    )
+
+
+def check_format(fin=None, chunk=None, blocksize=_STREAM_TO_STREAM_BLOCK_SIZE):
+    return _check_format(
+        fin=fin, chunk=chunk, blocksize=blocksize,
         decompressor_cls=StreamDecompressor
     )

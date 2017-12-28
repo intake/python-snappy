@@ -2,27 +2,8 @@ import argparse
 import io
 import sys
 
-from .snappy import stream_compress, stream_decompress
-from .hadoop_snappy import (
-    stream_compress as hadoop_stream_compress,
-    stream_decompress as hadoop_stream_decompress)
-
-
-FRAMING_FORMAT = 'framing'
-
-HADOOP_FORMAT = 'hadoop_snappy'
-
-DEFAULT_FORMAT = FRAMING_FORMAT
-
-COMPRESS_METHODS = {
-    FRAMING_FORMAT: stream_compress,
-    HADOOP_FORMAT: hadoop_stream_compress,
-}
-
-DECOMPRESS_METHODS = {
-    FRAMING_FORMAT: stream_decompress,
-    HADOOP_FORMAT: hadoop_stream_decompress,
-}
+from . import snappy_formats as formats
+from .snappy import UncompressError
 
 
 def cmdline_main():
@@ -58,9 +39,11 @@ def cmdline_main():
     parser.add_argument(
         '-t',
         dest='target_format',
-        default=DEFAULT_FORMAT,
-        choices=[FRAMING_FORMAT, HADOOP_FORMAT],
-        help='Target format, default is {}'.format(DEFAULT_FORMAT)
+        default=formats.DEFAULT_FORMAT,
+        choices=formats.ALL_SUPPORTED_FORMATS,
+        help=(
+            'Target format, default is "{}"'.format(formats.DEFAULT_FORMAT)
+        )
     )
 
     parser.add_argument(
@@ -79,10 +62,6 @@ def cmdline_main():
     )
 
     args = parser.parse_args()
-    if args.compress:
-        method = COMPRESS_METHODS[args.target_format]
-    else:
-        method = DECOMPRESS_METHODS[args.target_format]
 
     # workaround for https://bugs.python.org/issue14156
     if isinstance(args.infile, io.TextIOWrapper):
@@ -90,7 +69,20 @@ def cmdline_main():
     if isinstance(args.outfile, io.TextIOWrapper):
         args.outfile = stdout
 
-    method(args.infile, args.outfile)
+    additional_args = {}
+    if args.compress:
+        method = formats.get_compress_function(args.target_format)
+    else:
+        try:
+            method, read_chunk = formats.get_decompress_function(
+                args.target_format,
+                args.infile
+            )
+        except UncompressError as err:
+            sys.exit("Failed to get decompress function: {}".format(err))
+        additional_args['start_chunk'] = read_chunk
+
+    method(args.infile, args.outfile, **additional_args)
 
 
 if __name__ == "__main__":
