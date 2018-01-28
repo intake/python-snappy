@@ -44,11 +44,15 @@ snappymodule = Extension('snappy._snappy',
 ext_modules = [snappymodule]
 packages = ['snappy']
 install_requires = []
+setup_requires = []
+cffi_modules = []
 
 if 'PyPy' in sys.version:
     from setuptools import setup
     ext_modules = []
-    install_requires = ['cffi']
+    install_requires = ['cffi>=1.0.0']
+    setup_requires = ['cffi>=1.0.0']
+    cffi_modules = ['./snappy/snappy_cffi_builder.py:ffi']
 
 setup(
     name='python-snappy',
@@ -78,5 +82,7 @@ setup(
                  ],
     ext_modules=ext_modules,
     packages=packages,
-    install_requires=install_requires
+    install_requires=install_requires,
+    setup_requires=setup_requires,
+    cffi_modules=cffi_modules
 )
