@@ -1,0 +1,17 @@
+language: python
+python:
+  - "3.3"
+  - "3.2"
+  - "2.7"
+  - "2.6"
+  - "2.5"
+  - "pypy"
+before_install:
+  - sudo apt-get install -qq libsnappy1 libsnappy-dev python-dev libffi-dev
+  - if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then pip install --use-mirrors cffi; fi
+install:
+  - pip install -e . --use-mirrors
+# command to run tests
+script:
+  - nosetests test_snappy.py
+  - if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
