@@ -1,7 +1,14 @@
 from _snappy_cffi import ffi, lib
 
+try:
+    unicode        # Python 2
+except NameError:
+    unicode = str  # Python 3
+
+
 class UncompressError(Exception):
     pass
+
 
 class SnappyBufferSmallError(Exception):
     pass
