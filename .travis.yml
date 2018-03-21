@@ -13,7 +13,7 @@ addons:
     - libsnappy-dev
 install:
   #- pip install python-snappy
-  - pip install -e
+  - pip install -e .
   - pip install cffi flake8 nose2 pytest
 before_script:
     # stop the build if there are Python syntax errors or undefined names
