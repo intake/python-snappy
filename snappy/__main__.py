@@ -82,10 +82,10 @@ def cmdline_main():
             sys.exit("Failed to get decompress function: {}".format(err))
         additional_args['start_chunk'] = read_chunk
 
-    try:
-        method(args.infile, args.outfile, **additional_args)
-    except Exception as err:
-        sys.exit("%s: %s" % (err.__class__.__name__, err))
+    method(args.infile, args.outfile, **additional_args)
 
 if __name__ == "__main__":
-    cmdline_main()
+    try:
+        cmdline_main()
+    except Exception as err:
+        sys.exit("%s: %s" % (err.__class__.__name__, err))
