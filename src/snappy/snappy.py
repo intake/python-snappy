@@ -51,6 +51,13 @@ except ImportError:
     from .snappy_cffi import UncompressError, compress, decompress, \
                              isValidCompressed, uncompress, _crc32c
 
+try:
+    # Attempt loading the Intel SSE4.2 CRC32C instruction optimized crc32 library
+    from crc32c import crc32 as crc32c_func
+except ImportError:
+    # Fallback to slower crc32 that comes with snappy
+    crc32c_func = _crc32c
+
 _CHUNK_MAX = 65536
 _STREAM_TO_STREAM_BLOCK_SIZE = _CHUNK_MAX
 _STREAM_IDENTIFIER = b"sNaPpY"
@@ -66,7 +73,7 @@ _COMPRESSION_THRESHOLD = .125
 
 def _masked_crc32c(data):
     # see the framing format specification
-    crc = _crc32c(data)
+    crc = crc32c_func(data)
     return (((crc >> 15) | (crc << 17)) + 0xa282ead8) & 0xffffffff
 
 _compress = compress
