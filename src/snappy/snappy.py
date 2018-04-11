@@ -223,10 +223,20 @@ class StreamDecompressor(object):
         """
         self._buf.extend(data)
         uncompressed = bytearray()
+        work_buf = memoryview(self._buf)
+        chunk = None
+        crc = None
         while True:
-            if len(self._buf) < 4:
+            work_buf_len = len(work_buf)
+            if work_buf_len < 4:
+                # Memoryviews be deleted to allow in-place resizing of self._buf
+                del chunk, crc, work_buf
+                if work_buf_len == 0:
+                    del self._buf[:]
+                else:
+                    del self._buf[:-work_buf_len]
                 return bytes(uncompressed)
-            chunk_type = struct.unpack("<L", self._buf[:4])[0]
+            chunk_type = struct.unpack("<L", work_buf[:4])[0]
             size = (chunk_type >> 8)
             chunk_type &= 0xff
             if not self._header_found:
@@ -238,9 +248,15 @@ class StreamDecompressor(object):
                     chunk_type < _RESERVED_UNSKIPPABLE[1]):
                 raise UncompressError(
                     "stream received unskippable but unknown chunk")
-            if len(self._buf) < 4 + size:
+            if work_buf_len < 4 + size:
+                # Memoryviews be deleted to allow in-place resizing of self._buf
+                del chunk, crc, work_buf
+                if work_buf_len == 0:
+                    del self._buf[:]
+                else:
+                    del self._buf[:-work_buf_len]
                 return bytes(uncompressed)
-            chunk, self._buf = self._buf[4:4 + size], self._buf[4 + size:]
+            chunk, work_buf = work_buf[4:4 + size], work_buf[4 + size:]
             if chunk_type == _IDENTIFIER_CHUNK:
                 if chunk != _STREAM_IDENTIFIER:
                     raise UncompressError(
@@ -252,10 +268,10 @@ class StreamDecompressor(object):
             assert chunk_type in (_COMPRESSED_CHUNK, _UNCOMPRESSED_CHUNK)
             crc, chunk = chunk[:4], chunk[4:]
             if chunk_type == _COMPRESSED_CHUNK:
-                chunk = _uncompress(chunk)
-            if struct.pack("<L", _masked_crc32c(chunk)) != crc:
+                chunk = _uncompress(bytes(chunk))
+            if struct.pack("<L", _masked_crc32c(bytes(chunk) if not isinstance(chunk, bytes) else chunk)) != crc:
                 raise UncompressError("crc mismatch")
-            uncompressed += chunk
+            uncompressed.extend(chunk)
 
     def flush(self):
         """All pending input is processed, and a string containing the
