@@ -84,6 +84,7 @@ def cmdline_main():
 
     method(args.infile, args.outfile, **additional_args)
 
+
 if __name__ == "__main__":
     try:
         cmdline_main()
