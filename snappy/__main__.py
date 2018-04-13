@@ -86,4 +86,7 @@ def cmdline_main():
 
 
 if __name__ == "__main__":
-    cmdline_main()
+    try:
+        cmdline_main()
+    except Exception as err:
+        sys.exit("%s: %s" % (err.__class__.__name__, err))
