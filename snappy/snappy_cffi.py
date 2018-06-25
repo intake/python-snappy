@@ -1,4 +1,4 @@
-from _snappy_cffi import ffi, lib
+from ._snappy_cffi import ffi, lib
 
 try:
     unicode        # Python 2
