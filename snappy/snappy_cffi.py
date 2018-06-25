@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from ._snappy_cffi import ffi, lib
 
 try:

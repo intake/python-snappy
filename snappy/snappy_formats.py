@@ -5,6 +5,8 @@ get_decompress_function - returns stream decompress function for a current
 get_compress_function - returns compress function for a current format
     (specifed or default)
 """
+from __future__ import absolute_import
+
 from .snappy import (
     stream_compress, stream_decompress, check_format, UncompressError)
 from .hadoop_snappy import (

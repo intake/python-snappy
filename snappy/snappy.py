@@ -39,6 +39,7 @@ Expected usage like:
     assert "some data" == snappy.uncompress(compressed)
 
 """
+from __future__ import absolute_import
 
 import sys
 import struct
