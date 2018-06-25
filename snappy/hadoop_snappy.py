@@ -19,6 +19,7 @@ Expected usage like:
         assert fin1.read() == fin2.read()
 
 """
+from __future__ import absolute_import
 
 import struct
 
