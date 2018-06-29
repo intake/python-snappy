@@ -27,6 +27,7 @@
 #
 
 import os
+import platform
 import sys
 import random
 import snappy
@@ -77,18 +78,19 @@ class SnappyCompressionTest(TestCase):
         compressed = snappy.compress(text)
         self.assertEqual(text, snappy.decompress(compressed))
 
-    def test_compress_memoryview(self):
-        data = b"hello world!"
-        expected = snappy.compress(data)
-        actual = snappy.compress(memoryview(data))
-        self.assertEqual(actual, expected)
+    if platform.python_implementation() == 'CPython':
+        def test_compress_memoryview(self):
+            data = b"hello world!"
+            expected = snappy.compress(data)
+            actual = snappy.compress(memoryview(data))
+            self.assertEqual(actual, expected)
 
-    def test_decompress_memoryview(self):
-        data = b"hello world!"
-        compressed = snappy.compress(data)
-        expected = snappy.uncompress(compressed)
-        actual = snappy.uncompress(memoryview(compressed))
-        self.assertEqual(actual, expected)
+        def test_decompress_memoryview(self):
+            data = b"hello world!"
+            compressed = snappy.compress(data)
+            expected = snappy.uncompress(compressed)
+            actual = snappy.uncompress(memoryview(compressed))
+            self.assertEqual(actual, expected)
 
 
 class SnappyValidBufferTest(TestCase):
