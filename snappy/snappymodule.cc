@@ -91,29 +91,30 @@ snappy_strerror(snappy_status status)
 static PyObject *
 snappy__compress(PyObject *self, PyObject *args)
 {
-    const char * input;
-    int input_size;
+    Py_buffer input;
     size_t compressed_size, actual_size;
     PyObject * result;
     snappy_status status;
 
 #if PY_MAJOR_VERSION >= 3
-    if (!PyArg_ParseTuple(args, "y#", &input, &input_size))
+    if (!PyArg_ParseTuple(args, "y*", &input))
 #else
-    if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
+    if (!PyArg_ParseTuple(args, "s*", &input))
 #endif
         return NULL;
 
     // Ask for the max size of the compressed object.
-    compressed_size = snappy_max_compressed_length(input_size);
+    compressed_size = snappy_max_compressed_length(input.len);
 
     // Make snappy compression
     result = PyBytes_FromStringAndSize(NULL, compressed_size);
     if (result) {
         actual_size = compressed_size;
         Py_BEGIN_ALLOW_THREADS
-        status = snappy_compress(input, input_size, PyBytes_AS_STRING(result), &actual_size);
+        status = snappy_compress((const char *) input.buf, input.len,
+                                 PyBytes_AS_STRING(result), &actual_size);
         Py_END_ALLOW_THREADS
+        PyBuffer_Release(&input);
         if (status == SNAPPY_OK) {
             return maybe_resize(result, compressed_size, actual_size);
         }
@@ -123,30 +124,33 @@ snappy__compress(PyObject *self, PyObject *args)
         PyErr_Format(SnappyCompressError,
     		 "Error while compressing: %s", snappy_strerror(status));
     }
-
-    PyErr_Format(SnappyCompressError,
-		 "Error while compressing: unable to acquire output string");
+    else {
+        PyBuffer_Release(&input);
+        PyErr_Format(SnappyCompressError,
+                     "Error while compressing: unable to acquire output string");
+    }
     return NULL;
 }
 
 static PyObject *
 snappy__uncompress(PyObject *self, PyObject *args)
 {
-    const char * compressed;
-    int comp_size;
+    Py_buffer compressed;
     size_t uncomp_size, actual_size;
     PyObject * result;
     snappy_status status;
 
 #if PY_MAJOR_VERSION >=3
-    if (!PyArg_ParseTuple(args, "y#", &compressed, &comp_size))
+    if (!PyArg_ParseTuple(args, "y*", &compressed))
 #else
-    if (!PyArg_ParseTuple(args, "s#", &compressed, &comp_size))
+    if (!PyArg_ParseTuple(args, "s*", &compressed))
 #endif
         return NULL;
 
-    status = snappy_uncompressed_length(compressed, comp_size, &uncomp_size);
+    status = snappy_uncompressed_length((const char *) compressed.buf, compressed.len,
+                                        &uncomp_size);
     if (status != SNAPPY_OK) {
+        PyBuffer_Release(&compressed);
         PyErr_SetString(SnappyCompressedLengthError,
             "Can not calculate uncompressed length");
         return NULL;
@@ -156,17 +160,22 @@ snappy__uncompress(PyObject *self, PyObject *args)
     if (result) {
         actual_size = uncomp_size;
         Py_BEGIN_ALLOW_THREADS
-        status = snappy_uncompress(compressed, comp_size, PyBytes_AS_STRING(result), &actual_size);
+        status = snappy_uncompress((const char *) compressed.buf, compressed.len,
+                                   PyBytes_AS_STRING(result), &actual_size);
         Py_END_ALLOW_THREADS
+        PyBuffer_Release(&compressed);
         if (SNAPPY_OK == status) {
             return maybe_resize(result, uncomp_size, actual_size);
         }
         else {
             Py_DECREF(result);
+            PyErr_Format(SnappyUncompressError,
+                         "Error while decompressing: %s", snappy_strerror(status));
         }
     }
-    PyErr_Format(SnappyUncompressError,
-		 "Error while decompressing: %s", snappy_strerror(status));
+    else {
+        PyBuffer_Release(&compressed);
+    }
     return NULL;
 }
 

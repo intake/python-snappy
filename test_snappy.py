@@ -27,6 +27,7 @@
 #
 
 import os
+import platform
 import sys
 import random
 import snappy
@@ -76,6 +77,20 @@ class SnappyCompressionTest(TestCase):
         text = ('a'*10000000).encode('utf-8')
         compressed = snappy.compress(text)
         self.assertEqual(text, snappy.decompress(compressed))
+
+    if platform.python_implementation() == 'CPython':
+        def test_compress_memoryview(self):
+            data = b"hello world!"
+            expected = snappy.compress(data)
+            actual = snappy.compress(memoryview(data))
+            self.assertEqual(actual, expected)
+
+        def test_decompress_memoryview(self):
+            data = b"hello world!"
+            compressed = snappy.compress(data)
+            expected = snappy.uncompress(compressed)
+            actual = snappy.uncompress(memoryview(compressed))
+            self.assertEqual(actual, expected)
 
 
 class SnappyValidBufferTest(TestCase):
