@@ -33,7 +33,7 @@ version = '0.5.3'
 long_description = """
 Python bindings for the snappy compression library from Google.
 
-More details about Snappy library: http://code.google.com/p/snappy
+More details about Snappy library: http://google.github.io/snappy
 """
 
 
