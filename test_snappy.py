@@ -172,8 +172,8 @@ class SnappyStreaming(TestCase):
                 snappy.snappy._masked_crc32c(data[snappy.snappy._CHUNK_MAX:]))
         self.assertEqual(crc2, b"q\x8foE")
         self.assertEqual(compressor.add_chunk(data, compress=False),
-                b"\x01\x04\x00\x01" + crc1 + data[:snappy.snappy._CHUNK_MAX] +
-                b"\x01\xff\xff\x00" + crc2 + data[snappy.snappy._CHUNK_MAX:])
+                b"\x01\x04\x00\x01" + crc1 + data[:snappy.snappy._CHUNK_MAX].tobytes() +
+                b"\x01\xff\xff\x00" + crc2 + data[snappy.snappy._CHUNK_MAX:].tobytes())
 
     def test_decompression(self):
         # test that we check for the initial stream identifier
