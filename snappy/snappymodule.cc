@@ -203,18 +203,22 @@ snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
 static PyObject *
 snappy__crc32c(PyObject *self, PyObject *args)
 {
-    const unsigned char * input;
-    int input_size;
+    Py_buffer input;
+    PyObject * result;
 
 #if PY_MAJOR_VERSION >= 3
-    if (!PyArg_ParseTuple(args, "y#", &input, &input_size))
+    if (!PyArg_ParseTuple(args, "y*", &input))
 #else
-    if (!PyArg_ParseTuple(args, "s#", &input, &input_size))
+    if (!PyArg_ParseTuple(args, "s*", &input))
 #endif
         return NULL;
 
-    return PyLong_FromUnsignedLong(
-            crc_finalize(crc_update(crc_init(), input, input_size)));
+    result = PyLong_FromUnsignedLong(
+            crc_finalize(crc_update(crc_init(), (const unsigned char *) input.buf, input.len)));
+
+    PyBuffer_Release(&input);
+
+    return result;
 }
 
 static PyMethodDef snappy_methods[] = {
