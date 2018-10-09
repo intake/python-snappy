@@ -241,7 +241,7 @@ class SnappyStreaming(TestCase):
 
     def test_concatenation(self):
         data1 = os.urandom(snappy.snappy._CHUNK_MAX * 2)
-        data2 = memoryview(os.urandom(4096))
+        data2 = os.urandom(4096)
         decompressor = snappy.StreamDecompressor()
         self.assertEqual(
                 decompressor.decompress(
