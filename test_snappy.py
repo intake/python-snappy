@@ -163,18 +163,17 @@ class SnappyStreaming(TestCase):
                 b"\x01\x04\x00\x01" + crc1 + data[:snappy.snappy._CHUNK_MAX] +
                 b"\x01\xff\xff\x00" + crc2 + data[snappy.snappy._CHUNK_MAX:])
 
-        if platform.python_implementation() == 'CPython':
-            # test that we can compress a memoryview
-            data = memoryview(b"\x01" * (snappy.snappy._CHUNK_MAX * 2 - 5))
-            crc1 = struct.pack("<L",
-                    snappy.snappy._masked_crc32c(data[:snappy.snappy._CHUNK_MAX]))
-            self.assertEqual(crc1, b"h#6\x8e")
-            crc2 = struct.pack("<L",
-                    snappy.snappy._masked_crc32c(data[snappy.snappy._CHUNK_MAX:]))
-            self.assertEqual(crc2, b"q\x8foE")
-            self.assertEqual(compressor.add_chunk(data, compress=False),
-                    b"\x01\x04\x00\x01" + crc1 + data[:snappy.snappy._CHUNK_MAX].tobytes() +
-                    b"\x01\xff\xff\x00" + crc2 + data[snappy.snappy._CHUNK_MAX:].tobytes())
+        # test that we can compress a memoryview
+        data = memoryview(b"\x01" * (snappy.snappy._CHUNK_MAX * 2 - 5))
+        crc1 = struct.pack("<L",
+                snappy.snappy._masked_crc32c(data[:snappy.snappy._CHUNK_MAX]))
+        self.assertEqual(crc1, b"h#6\x8e")
+        crc2 = struct.pack("<L",
+                snappy.snappy._masked_crc32c(data[snappy.snappy._CHUNK_MAX:]))
+        self.assertEqual(crc2, b"q\x8foE")
+        self.assertEqual(compressor.add_chunk(data, compress=False),
+                b"\x01\x04\x00\x01" + crc1 + data[:snappy.snappy._CHUNK_MAX].tobytes() +
+                b"\x01\xff\xff\x00" + crc2 + data[snappy.snappy._CHUNK_MAX:].tobytes())
 
     def test_decompression(self):
         # test that we check for the initial stream identifier
@@ -232,14 +231,13 @@ class SnappyStreaming(TestCase):
                     uncompressed_data)
 
         # test that we can decompress a memoryview
-        if platform.python_implementation() == 'CPython':
-            decompressor = snappy.StreamDecompressor()
-            decompressor.decompress(memoryview(b"\xff\x06\x00\x00sNaPpY"))
-            self.assertEqual(
-                    decompressor.copy().decompress(
-                        memoryview(b"\x01\x36\x00\x00" +
-                        struct.pack("<L", snappy.snappy._masked_crc32c(data)) + data)),
-                    data)
+        decompressor = snappy.StreamDecompressor()
+        decompressor.decompress(memoryview(b"\xff\x06\x00\x00sNaPpY"))
+        self.assertEqual(
+                decompressor.copy().decompress(
+                    memoryview(b"\x01\x36\x00\x00" +
+                    struct.pack("<L", snappy.snappy._masked_crc32c(data)) + data)),
+                data)
 
     def test_concatenation(self):
         data1 = os.urandom(snappy.snappy._CHUNK_MAX * 2)
