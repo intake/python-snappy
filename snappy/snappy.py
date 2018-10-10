@@ -130,9 +130,9 @@ class StreamCompressor(object):
         out = bytearray()
         if not self._header_chunk_written:
             self._header_chunk_written = True
-            out += struct.pack("<L", _IDENTIFIER_CHUNK +
-                                      (len(_STREAM_IDENTIFIER) << 8))
-            out += _STREAM_IDENTIFIER
+            out.extend(struct.pack("<L", _IDENTIFIER_CHUNK +
+                                      (len(_STREAM_IDENTIFIER) << 8)))
+            out.extend(_STREAM_IDENTIFIER)
         for i in range(0, len(data), _CHUNK_MAX):
             chunk = data[i:i + _CHUNK_MAX]
             crc = _masked_crc32c(chunk)
@@ -150,9 +150,9 @@ class StreamCompressor(object):
                 chunk_type = _COMPRESSED_CHUNK
             else:
                 chunk_type = _UNCOMPRESSED_CHUNK
-            out += struct.pack("<LL", chunk_type + ((len(chunk) + 4) << 8),
-                                   crc)
-            out += chunk
+            out.extend(struct.pack("<LL", chunk_type + ((len(chunk) + 4) << 8),
+                                   crc))
+            out.extend(chunk)
         return bytes(out)
 
     def compress(self, data):
@@ -221,7 +221,7 @@ class StreamDecompressor(object):
         the decompress() method. Some of the input data may be preserved in
         internal buffers for later processing.
         """
-        self._buf += data
+        self._buf.extend(data)
         uncompressed = bytearray()
         while True:
             if len(self._buf) < 4:
