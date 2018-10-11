@@ -127,13 +127,12 @@ class StreamCompressor(object):
         snappy's performance. If compress == True, compression always happens,
         and if compress == False, compression never happens.
         """
+        out = bytearray()
         if not self._header_chunk_written:
             self._header_chunk_written = True
-            out = [struct.pack("<L", _IDENTIFIER_CHUNK +
-                                      (len(_STREAM_IDENTIFIER) << 8)),
-                   _STREAM_IDENTIFIER]
-        else:
-            out = []
+            out.extend(struct.pack("<L", _IDENTIFIER_CHUNK +
+                                      (len(_STREAM_IDENTIFIER) << 8)))
+            out.extend(_STREAM_IDENTIFIER)
         for i in range(0, len(data), _CHUNK_MAX):
             chunk = data[i:i + _CHUNK_MAX]
             crc = _masked_crc32c(chunk)
@@ -151,10 +150,10 @@ class StreamCompressor(object):
                 chunk_type = _COMPRESSED_CHUNK
             else:
                 chunk_type = _UNCOMPRESSED_CHUNK
-            out.append(struct.pack("<LL", chunk_type + ((len(chunk) + 4) << 8),
+            out.extend(struct.pack("<LL", chunk_type + ((len(chunk) + 4) << 8),
                                    crc))
-            out.append(chunk)
-        return b"".join(out)
+            out.extend(chunk)
+        return bytes(out)
 
     def compress(self, data):
         """This method is simply an alias for compatibility with zlib
@@ -193,7 +192,7 @@ class StreamDecompressor(object):
     __slots__ = ["_buf", "_header_found"]
 
     def __init__(self):
-        self._buf = b""
+        self._buf = bytearray()
         self._header_found = False
 
     @staticmethod
@@ -222,11 +221,11 @@ class StreamDecompressor(object):
         the decompress() method. Some of the input data may be preserved in
         internal buffers for later processing.
         """
-        self._buf += data
-        uncompressed = []
+        self._buf.extend(data)
+        uncompressed = bytearray()
         while True:
             if len(self._buf) < 4:
-                return b"".join(uncompressed)
+                return bytes(uncompressed)
             chunk_type = struct.unpack("<L", self._buf[:4])[0]
             size = (chunk_type >> 8)
             chunk_type &= 0xff
@@ -240,7 +239,7 @@ class StreamDecompressor(object):
                 raise UncompressError(
                     "stream received unskippable but unknown chunk")
             if len(self._buf) < 4 + size:
-                return b"".join(uncompressed)
+                return bytes(uncompressed)
             chunk, self._buf = self._buf[4:4 + size], self._buf[4 + size:]
             if chunk_type == _IDENTIFIER_CHUNK:
                 if chunk != _STREAM_IDENTIFIER:
@@ -256,7 +255,7 @@ class StreamDecompressor(object):
                 chunk = _uncompress(chunk)
             if struct.pack("<L", _masked_crc32c(chunk)) != crc:
                 raise UncompressError("crc mismatch")
-            uncompressed.append(chunk)
+            uncompressed += chunk
 
     def flush(self):
         """All pending input is processed, and a string containing the
@@ -274,7 +273,7 @@ class StreamDecompressor(object):
         to speed up random seeks into the stream at a future point.
         """
         copy = StreamDecompressor()
-        copy._buf, copy._header_found = self._buf, self._header_found
+        copy._buf, copy._header_found = bytearray(self._buf), self._header_found
         return copy
 
 

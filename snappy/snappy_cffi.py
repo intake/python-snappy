@@ -20,7 +20,7 @@ def prepare(data):
     _out_data = None
     _out_size = None
 
-    _out_data = ffi.new('char[]', data)
+    _out_data = ffi.from_buffer(data)
     _out_size = ffi.cast('size_t', len(data))
 
     return (_out_data, _out_size)
@@ -89,6 +89,6 @@ def isValidCompressed(data):
 decompress = uncompress
 
 def _crc32c(data):
-    c_data = ffi.new('char[]', data)
+    c_data = ffi.from_buffer(data)
     size = ffi.cast('int', len(data))
     return int(lib._crc32c(c_data, size))
