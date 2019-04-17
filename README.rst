@@ -132,3 +132,9 @@ The procedure should be,
 
     $ brew install snappy # snappy library from Google 
     $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
+
+Try this command if libstdc++ is deprecated
+
+::
+  
+    $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib -stdlib=libc++ " pip install python-snappy
