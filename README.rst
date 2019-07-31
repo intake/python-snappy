@@ -14,7 +14,7 @@ Dependencies
   You can install Snappy C library with following commands:
 
   - APT:  :code:`sudo apt-get install libsnappy-dev`
-  - RPM:  :code:`sudo yum install libsnappy-devel`
+  - RPM:  :code:`sudo yum install snappy-devel`
   - Brew: :code:`brew install snappy`
 
 To use with pypy:
