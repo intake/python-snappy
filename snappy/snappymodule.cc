@@ -53,6 +53,10 @@ static struct module_state _state;
 #define PyBytes_AS_STRING PyString_AS_STRING
 #endif
 
+#if PY_VERSION_HEX < 0x030900A4
+#  define Py_SET_SIZE(obj, size) ((Py_SIZE(obj) = (size)), (void)0)
+#endif
+
 static PyObject *SnappyCompressError,
     *SnappyUncompressError,
     *SnappyInvalidCompressedInputError,
@@ -68,7 +72,7 @@ maybe_resize(PyObject *str, size_t expected_size, size_t actual_size)
 	        _PyBytes_Resize(&str, actual_size);
 	        return str;
 	    }
-	    Py_SIZE(str) = actual_size;
+	    Py_SET_SIZE(str, actual_size);
     }
     return str;
 }
