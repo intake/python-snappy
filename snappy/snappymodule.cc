@@ -25,6 +25,7 @@ ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
+#define PY_SSIZE_T_CLEAN
 #include "Python.h"
 #include <string.h>
 #include <stdio.h>
@@ -184,7 +185,7 @@ static PyObject *
 snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
 {
     const char * compressed;
-    int comp_size;
+    Py_ssize_t comp_size;
     snappy_status status;
 
 #if PY_MAJOR_VERSION >=3
