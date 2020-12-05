@@ -28,7 +28,7 @@ jobs:
         run: pip install -e .
 
       - name: Install test dependencies
-        run: pip install cffi flake8 nose2 pytest twine
+        run: pip install cffi flake8 pytest twine
 
       - name: Flake8
         # stop the build if there are Python syntax errors or undefined names
@@ -37,9 +37,9 @@ jobs:
           flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Nosetests
+      - name: Pytest
         run: |
-          nose2 test_snappy.py
+          pytest test_snappy.py
         # if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
 
       - name: Build manylinux Python wheels
@@ -47,7 +47,7 @@ jobs:
         with:
           python-versions: "cp37-cp37m"
           build-requirements: "cffi"
-          system-packages: "snappy-devel"
+          system-packages: "libsnappy-devel"
 
       # - name: Publish wheels to PyPI
       #   if: github.ref == 'refs/heads/master'
