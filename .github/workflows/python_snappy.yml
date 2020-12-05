@@ -47,7 +47,14 @@ jobs:
         with:
           python-versions: "cp37-cp37m"
           build-requirements: "cffi"
-          system-packages: "libsnappy-devel"
+          system-packages: "snappy"
+
+      - name: Archive wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: manylinux-wheels
+          path: |
+            dist/*-manylinux*.whl
 
       # - name: Publish wheels to PyPI
       #   if: github.ref == 'refs/heads/master'
