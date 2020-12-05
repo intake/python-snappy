@@ -24,17 +24,23 @@ jobs:
       - name: Install libsnappy-dev
         run: sudo apt-get install libsnappy-dev
 
-      # - name: Flake8
-      #   run: tox -e flake8
+      - name: Build and install python-snappy
+        run: pip install -e .
 
-      # - name: Pylint
-      #   run: tox -e pylint
+      - name: Install test dependencies
+        run: pip install cffi flake8 nose2 pytest
 
-      # - name: Black
-      #   run: tox -e black
+      - name: Flake8
+        # stop the build if there are Python syntax errors or undefined names
+        # exit-zero treats all errors as warnings.  The GitHub editor is 127 chars wide
+        run: |
+          flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      # - name: Pytest
-      #   run: tox -e py
+      - name: Nosetests
+        run: |
+          nosetests test_snappy.py
+          if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
 
       # # Publish package
       # - name: Publish wheel to PyPI
