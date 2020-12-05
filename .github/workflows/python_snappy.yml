@@ -8,20 +8,20 @@ jobs:
     strategy:
       matrix:
         include:
-          # - python-version: 3.5
-          #   pep-425-tag: cp35-cp35m
+          - python-version: 3.5
+            pep-425-tag: cp35-cp35m
 
-          # - python-version: 3.6
-          #   pep-425-tag: cp36-cp36m
+          - python-version: 3.6
+            pep-425-tag: cp36-cp36m
 
           - python-version: 3.7
             pep-425-tag: cp37-cp37m
 
-          # - python-version: 3.8
-          #   pep-425-tag: cp38-cp38
+          - python-version: 3.8
+            pep-425-tag: cp38-cp38
 
-          # - python-version: 3.9
-          #   pep-425-tag: cp39-cp39
+          - python-version: 3.9
+            pep-425-tag: cp39-cp39
 
     name: Python ${{ matrix.python-version }}
 
