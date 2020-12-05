@@ -6,9 +6,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      max-parallel: 4
       matrix:
-        python-version: [3.7] # add 3.5, 3.6, 3.8, 3.9.
+        include:
+          # - python-version: 3.5
+          #   pep-425-tag: cp35-cp35m
+
+          # - python-version: 3.6
+          #   pep-425-tag: cp36-cp36m
+
+          - python-version: 3.7
+            pep-425-tag: cp37-cp37m
+
+          # - python-version: 3.8
+          #   pep-425-tag: cp38-cp38
+
+          # - python-version: 3.9
+          #   pep-425-tag: cp39-cp39
 
     name: Python ${{ matrix.python-version }}
 
@@ -45,14 +58,14 @@ jobs:
       - name: Build manylinux Python wheels
         uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
         with:
-          python-versions: "cp37-cp37m"
+          python-versions: ${{ matrix.pep-425-tag }}
           build-requirements: "cffi"
           system-packages: "snappy"
 
       - name: Archive wheels
         uses: actions/upload-artifact@v2
         with:
-          name: manylinux-wheels
+          name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
           path: |
             dist/*-manylinux*.whl
 
