@@ -1,4 +1,4 @@
-name: Python package
+name: Test & Build
 
 on: [push]
 
@@ -22,7 +22,7 @@ jobs:
           architecture: x64
 
       - name: Install libsnappy-dev
-        run: apt-get install libsnappy-dev
+        run: sudo apt-get install libsnappy-dev
 
       # - name: Flake8
       #   run: tox -e flake8
