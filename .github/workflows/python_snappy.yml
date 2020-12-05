@@ -45,18 +45,26 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Build python-snappy manylinux wheels
-        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2014_x86_64
+        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
         with:
           python-versions: ${{ matrix.pep-425-tag }}
           build-requirements: "cffi"
           system-packages: "snappy-devel"
 
       - name: Install python-snappy wheel
-        run: pip install dist/python_snappy*-manylinux2014*.whl
+        # manylinux1 offers broader compatibility than manylinux2010 or manylinux2014
+        run: |
+          pip install dist/python_snappy*-manylinux1*.whl
+
+     - name: Clean up sources
+        # this cleans up the sources to make sure `import snappy` uses the wheel
+        # an alternative would be to run pytest in a different working directory
+        run: rm -rf setup.py ./snappy
 
       - name: Pytest
         run: |
           pytest test_snappy.py
+        # TODO: add support for pypy
         # if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
 
       - name: Archive wheels
@@ -64,7 +72,7 @@ jobs:
         with:
           name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
           path: |
-            dist/python_snappy*-manylinux*.whl
+            dist/python_snappy*-manylinux1*.whl
 
       # - name: Publish wheels to PyPI
       #   if: github.ref == 'refs/heads/master'
