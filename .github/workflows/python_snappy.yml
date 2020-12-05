@@ -45,14 +45,14 @@ jobs:
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
       - name: Build python-snappy manylinux wheels
-        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
+        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2014_x86_64
         with:
           python-versions: ${{ matrix.pep-425-tag }}
           build-requirements: "cffi"
           system-packages: "snappy-devel"
 
       - name: Install python-snappy wheel
-        run: pip install dist/python_snappy*-manylinux2010*.whl
+        run: pip install dist/python_snappy*-manylinux2014*.whl
 
       - name: Pytest
         run: |
