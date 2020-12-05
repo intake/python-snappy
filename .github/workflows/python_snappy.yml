@@ -56,7 +56,7 @@ jobs:
         run: |
           pip install dist/python_snappy*-manylinux1*.whl
 
-     - name: Clean up sources
+      - name: Clean up sources
         # this cleans up the sources to make sure `import snappy` uses the wheel
         # an alternative would be to run pytest in a different working directory
         run: rm -rf setup.py ./snappy
