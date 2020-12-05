@@ -34,12 +34,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
           architecture: x64
 
-      - name: Install libsnappy-dev
-        run: sudo apt-get install libsnappy-dev
-
-      - name: Install python-snappy
-        run: pip install -e .
-
       - name: Install test dependencies
         run: pip install cffi flake8 pytest twine
 
@@ -50,24 +44,27 @@ jobs:
           flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
           flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Pytest
-        run: |
-          pytest test_snappy.py
-        # if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
-
-      - name: Build manylinux Python wheels
+      - name: Build python-snappy manylinux wheels
         uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
         with:
           python-versions: ${{ matrix.pep-425-tag }}
           build-requirements: "cffi"
           system-packages: "snappy"
 
+      - name: Install python-snappy wheel
+        run: pip install dist/python_snappy*-manylinux1*.whl
+
+      - name: Pytest
+        run: |
+          pytest test_snappy.py
+        # if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
+
       - name: Archive wheels
         uses: actions/upload-artifact@v2
         with:
           name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
           path: |
-            dist/*-manylinux*.whl
+            dist/python_snappy*-manylinux1*.whl
 
       # - name: Publish wheels to PyPI
       #   if: github.ref == 'refs/heads/master'
