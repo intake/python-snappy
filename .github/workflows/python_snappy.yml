@@ -52,7 +52,7 @@ jobs:
           system-packages: "snappy-devel"
 
       - name: Install python-snappy wheel
-        run: pip install dist/python_snappy*-manylinux1*.whl
+        run: pip install dist/python_snappy*-manylinux2010*.whl
 
       - name: Pytest
         run: |
@@ -64,7 +64,7 @@ jobs:
         with:
           name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
           path: |
-            dist/python_snappy*-manylinux1*.whl
+            dist/python_snappy*-manylinux*.whl
 
       # - name: Publish wheels to PyPI
       #   if: github.ref == 'refs/heads/master'
