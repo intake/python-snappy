@@ -49,7 +49,7 @@ jobs:
         with:
           python-versions: ${{ matrix.pep-425-tag }}
           build-requirements: "cffi"
-          system-packages: "snappy"
+          system-packages: "snappy-devel"
 
       - name: Install python-snappy wheel
         run: pip install dist/python_snappy*-manylinux1*.whl
