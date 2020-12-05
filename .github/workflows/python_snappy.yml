@@ -39,8 +39,8 @@ jobs:
 
       - name: Nosetests
         run: |
-          nosetests test_snappy.py
-          if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
+          nose2 test_snappy.py
+        # if [[ $TRAVIS_PYTHON_VERSION == pypy  ]]; then nosetests test_snappy_cffi.py; fi
 
       # # Publish package
       # - name: Publish wheel to PyPI
