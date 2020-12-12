@@ -1,0 +1,83 @@
+name: CPython
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python-version: 2.7
+            pep-425-tag: cp27-cp27mu
+            # we build for "wide-unicode" CPython 2.7, which is prevalent among
+            # most Linux distributions. See https://github.com/pypa/manylinux
+
+          - python-version: 3.5
+            pep-425-tag: cp35-cp35m
+
+          - python-version: 3.6
+            pep-425-tag: cp36-cp36m
+
+          - python-version: 3.7
+            pep-425-tag: cp37-cp37m
+
+          - python-version: 3.8
+            pep-425-tag: cp38-cp38
+
+          - python-version: 3.9
+            pep-425-tag: cp39-cp39
+
+    name: Python ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Install test dependencies
+        run: pip install flake8 pytest twine
+
+      - name: Flake8
+        # stop the build if there are Python syntax errors or undefined names
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
+        run: |
+          flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+      - name: Build python-snappy manylinux wheels
+        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
+        with:
+          python-versions: ${{ matrix.pep-425-tag }}
+          system-packages: "snappy-devel"
+
+      - name: Install python-snappy wheel
+        # manylinux1 offers broader compatibility than manylinux2010 or manylinux2014
+        run: |
+          pip install dist/python_snappy*-manylinux1*.whl
+
+      - name: Clean up sources
+        # this cleans up the sources to make sure `import snappy` uses the wheel
+        # an alternative would be to run pytest in a different working directory
+        run: rm -rf setup.py ./snappy
+
+      - name: Pytest
+        run: pytest --verbose test_snappy.py
+
+      - name: Archive wheels
+        uses: actions/upload-artifact@v2
+        with:
+          name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
+          path: dist/python_snappy*-manylinux1*.whl
+
+      - name: Publish wheels to PyPI
+        if: github.ref == 'refs/heads/master'
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+        run: |
+          twine upload dist/python_snappy*-manylinux1*.whl
