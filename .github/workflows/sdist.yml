@@ -18,7 +18,7 @@ jobs:
           architecture: x64
 
       - name: Install test dependencies
-        run: pip install flake8 pytest twine
+        run: pip install wheel flake8 pytest twine
 
       - name: Flake8
         # stop the build if there are Python syntax errors or undefined names
