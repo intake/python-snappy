@@ -1,0 +1,35 @@
+name: PyPy
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [pypy2, pypy3]
+
+    name: ${{ matrix.python-version }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Install test dependencies
+        run: pip install cffi flake8 pytest
+
+      - name: Install libsnappy-dev
+        run: sudo apt-get install libsnappy-dev
+
+      # Flake8 is already run in Source Distribution (sdist) workflow, so we don't run it here.
+
+      - name: Install python-snappy from source
+        run: pip install -e .
+
+      - name: Pytest
+        run: pytest --verbose test_snappy.py test_snappy_cffi.py
