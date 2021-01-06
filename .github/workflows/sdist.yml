@@ -45,9 +45,10 @@ jobs:
         run: pytest --verbose test_snappy.py
 
       - name: Archive sdist
+        if: startsWith(github.ref, 'refs/tags/0.')
         uses: actions/upload-artifact@v2
         with:
-          name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
+          name: python-snappy-sdist
           path: dist/python-snappy*.tar.gz
 
       - name: Publish sdist to PyPI
