@@ -39,7 +39,7 @@ jobs:
         run: rm -rf setup.py ./snappy
 
       - name: Install python-snappy sdist
-        run: pip install dist/python_snappy*.tar.gz
+        run: pip install dist/python-snappy*.tar.gz
 
       - name: Pytest
         run: pytest --verbose test_snappy.py
@@ -48,7 +48,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
-          path: dist/python_snappy*.tar.gz
+          path: dist/python-snappy*.tar.gz
 
       - name: Publish sdist to PyPI
         if: startsWith(github.ref, 'refs/tags/0.')
@@ -56,4 +56,4 @@ jobs:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          twine upload dist/python_snappy*.tar.gz
+          twine upload dist/python-snappy*.tar.gz
