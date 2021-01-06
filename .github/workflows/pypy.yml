@@ -26,7 +26,7 @@ jobs:
       - name: Install libsnappy-dev
         run: sudo apt-get install libsnappy-dev
 
-      # Flake8 is already run in CPython workflow, so we don't run it here.
+      # Flake8 is already run in Source Distribution (sdist) workflow, so we don't run it here.
 
       - name: Install python-snappy from source
         run: pip install -e .
