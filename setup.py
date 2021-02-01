@@ -39,7 +39,7 @@ More details about Snappy library: http://google.github.io/snappy
 
 snappymodule = Extension('snappy._snappy',
                          libraries=['snappy'],
-                         sources=['snappy/snappymodule.cc', 'snappy/crc32c.c'])
+                         sources=['src/snappy/snappymodule.cc', 'src/snappy/crc32c.c'])
 
 ext_modules = [snappymodule]
 packages = ['snappy']
@@ -52,7 +52,7 @@ if 'PyPy' in sys.version:
     ext_modules = []
     install_requires = ['cffi>=1.0.0']
     setup_requires = ['cffi>=1.0.0']
-    cffi_modules = ['./snappy/snappy_cffi_builder.py:ffi']
+    cffi_modules = ['./src/snappy/snappy_cffi_builder.py:ffi']
 
 setup(
     name='python-snappy',
@@ -80,10 +80,13 @@ setup(
                  'Programming Language :: Python :: 3.5',
                  'Programming Language :: Python :: 3.6',
                  'Programming Language :: Python :: 3.7',
+                 'Programming Language :: Python :: 3.8',
+                 'Programming Language :: Python :: 3.9,'
                  ],
     ext_modules=ext_modules,
     packages=packages,
     install_requires=install_requires,
     setup_requires=setup_requires,
-    cffi_modules=cffi_modules
+    cffi_modules=cffi_modules,
+    package_dir={'': 'src'},
 )
