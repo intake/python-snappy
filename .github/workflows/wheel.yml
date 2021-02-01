@@ -1,6 +1,6 @@
 name: PyPi wheel and sdist
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   sdist:
