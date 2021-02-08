@@ -51,17 +51,21 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [ubuntu-latest, macos-latest, windows-2019]
         architecture: ['x64']
+        linux_archs: ["auto s390x"]
         include:
-          - os: windows-latest
+          - os: windows-2019
             architecture: 'x86'
-            CIBW_SKIP: "*2*win* *win_amd64"
-            CIBW_ENVIRONMENT_WINDOWS: INCLUDE="C:/Program Files (x86)/Snappy/include" LIB="C:/Program Files (x86)/Snappy/lib"
-          - os: windows-latest
+            skip: "*2*win* *win_amd64"
+            environment_windows: INCLUDE="C:/Program Files (x86)/Snappy/include" LIB="C:/Program Files (x86)/Snappy/lib"
+          - os: windows-2019
             architecture: 'x64'
-            CIBW_SKIP: "*2*win* *win32"
-            CIBW_ENVIRONMENT_WINDOWS: INCLUDE="C:/Program Files/Snappy/include" LIB="C:/Program Files/Snappy/lib"
+            skip: "*2*win* *win32"
+            environment_windows: INCLUDE="C:/Program Files/Snappy/include" LIB="C:/Program Files/Snappy/lib"
+          - os: ubuntu-20.04
+            architecture: 'x64'
+            linux_archs: aarch64 ppc64le
 
     name: Python ${{ matrix.os }}
     env:
@@ -71,8 +75,9 @@ jobs:
       MACOSX_DEPLOYMENT_TARGET: "10.9"
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
       CIBW_BEFORE_ALL: "bash {project}/build_snappy.sh"
-      CIBW_SKIP: ${{ matrix.CIBW_SKIP }}
-      CIBW_ENVIRONMENT_WINDOWS: ${{ matrix.CIBW_ENVIRONMENT_WINDOWS }}
+      CIBW_SKIP: ${{ matrix.skip }}
+      CIBW_ENVIRONMENT_WINDOWS: ${{ matrix.environment_windows }}
+      CIBW_ARCHS_LINUX: ${{ matrix.linux_archs }}
     steps:
       - uses: actions/checkout@v2
 
@@ -86,14 +91,17 @@ jobs:
 #        if: runner.os == 'Windows'
 #        run: |
 #          choco install vcpython27 -f -y
+
+
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
         
       - name: Add msbuild to PATH
         if: runner.os == 'Windows'
         uses: microsoft/setup-msbuild@v1.0.2
-
-      - name: Install cibuildwheel
-        run: |
-          python -m pip install cibuildwheel==1.9.0
 
       - name: delvewheel install
         if: runner.os == 'Windows'
@@ -101,8 +109,7 @@ jobs:
           python -m pip install delvewheel==0.0.9
 
       - name: Build wheels
-        run: |
-          python -m cibuildwheel --output-dir wheelhouse
+        uses: joerick/cibuildwheel@v1.9.0
 
       - uses: actions/upload-artifact@v2
         with:
