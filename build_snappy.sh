@@ -15,8 +15,8 @@ case "$(uname -s)" in
    # See correspondence table at the bottom of this answer
 
    *)
-    cmake -S . -B "build"
-    cmake --build build --config Release --target install
+    cmake -S . -B "build" -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+    cmake --build build --config Release --target install 
      ;;
 esac
 

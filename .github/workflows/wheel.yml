@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-2019]
+        os: [ubuntu-20.04, macos-10.15, windows-2019]
         architecture: ['x64']
         linux_archs: ["auto s390x"]
         include:
@@ -78,6 +78,8 @@ jobs:
       CIBW_SKIP: ${{ matrix.skip }}
       CIBW_ENVIRONMENT_WINDOWS: ${{ matrix.environment_windows }}
       CIBW_ARCHS_LINUX: ${{ matrix.linux_archs }}
+      CIBW_ARCHS_MACOS: x86_64 universal2
+      CIBW_TEST_SKIP: "*_arm64 *_universal2:arm64"
     steps:
       - uses: actions/checkout@v2
 
