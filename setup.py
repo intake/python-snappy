@@ -31,10 +31,6 @@ except ImportError:
 
 import os
 
-sys.stderr.write("#" * 100 + "\n")
-sys.stderr.write(os.environ.get("LIBPATH", "libpath not found") + "\n")
-sys.stderr.write("#" * 100 + "\n")
-
 version = '0.6.0'
 long_description = """
 Python bindings for the snappy compression library from Google.
