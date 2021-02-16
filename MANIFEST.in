@@ -1,1 +1,1 @@
-include *.py AUTHORS README.rst snappy/*.h MANIFEST.in LICENSE
+include *.py AUTHORS README.rst src/snappy/*.h MANIFEST.in LICENSE

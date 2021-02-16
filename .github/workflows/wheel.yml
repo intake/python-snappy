@@ -1,34 +1,12 @@
-name: Wheel
+name: PyPi wheel and sdist
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
-  build:
+  sdist:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        include:
-          - python-version: 2.7
-            pep-425-tag: cp27-cp27mu
-            # we build for "wide-unicode" CPython 2.7, which is prevalent among
-            # most Linux distributions. See https://github.com/pypa/manylinux
 
-          - python-version: 3.5
-            pep-425-tag: cp35-cp35m
-
-          - python-version: 3.6
-            pep-425-tag: cp36-cp36m
-
-          - python-version: 3.7
-            pep-425-tag: cp37-cp37m
-
-          - python-version: 3.8
-            pep-425-tag: cp38-cp38
-
-          - python-version: 3.9
-            pep-425-tag: cp39-cp39
-
-    name: Python ${{ matrix.python-version }}
+    name: Python 3.9
 
     steps:
       - uses: actions/checkout@v2
@@ -36,44 +14,122 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: ${{ matrix.python-version }}
+          python-version: 3.9
           architecture: x64
 
       - name: Install test dependencies
-        run: pip install pytest twine
+        run: pip install wheel flake8 pytest
 
-      # Flake8 is already run in Source Distribution (sdist) workflow, so we don't run it here.
-
-      - name: Build python-snappy manylinux wheels
-        uses: RalfG/python-wheels-manylinux-build@v0.3.3-manylinux2010_x86_64
-        with:
-          python-versions: ${{ matrix.pep-425-tag }}
-          system-packages: "snappy-devel"
-
-      - name: Install python-snappy wheel
-        # manylinux1 offers broader compatibility than manylinux2010 or manylinux2014
+      - name: Flake8
+        # stop the build if there are Python syntax errors or undefined names
+        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
         run: |
-          pip install dist/python_snappy*-manylinux1*.whl
+          flake8 . --count --select=E901,E999,F821,F822,F823 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
 
-      - name: Clean up sources
-        # this cleans up the sources to make sure `import snappy` uses the wheel
-        # an alternative would be to run pytest in a different working directory
-        run: rm -rf setup.py ./snappy
+      - name: Install libsnappy-dev
+        run: sudo apt-get install libsnappy-dev
+
+      - name: Generate source distribution
+        run: python setup.py sdist
+
+      - name: Install python-snappy sdist
+        run: pip install dist/python-snappy*.tar.gz
 
       - name: Pytest
         run: pytest --verbose test_snappy.py
 
-      - name: Archive wheels
-        if: startsWith(github.ref, 'refs/tags/0.')
+      - name: Archive sdist
         uses: actions/upload-artifact@v2
         with:
-          name: python_snappy-${{ matrix.pep-425-tag }}-manylinux
-          path: dist/python_snappy*-manylinux1*.whl
+          name: wheels
+          path: dist/python-snappy*.tar.gz
 
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-20.04, macos-10.15, windows-2019]
+        architecture: ['x64']
+        linux_archs: ["auto s390x"]
+        include:
+          - os: windows-2019
+            architecture: 'x86'
+            skip: "*2*win* *win_amd64"
+            environment_windows: INCLUDE="C:/Program Files (x86)/Snappy/include" LIB="C:/Program Files (x86)/Snappy/lib"
+          - os: windows-2019
+            architecture: 'x64'
+            skip: "*2*win* *win32"
+            environment_windows: INCLUDE="C:/Program Files/Snappy/include" LIB="C:/Program Files/Snappy/lib"
+          - os: ubuntu-20.04
+            architecture: 'x64'
+            linux_archs: aarch64 ppc64le
+
+    name: Python ${{ matrix.os }}
+    env:
+      CIBW_TEST_REQUIRES: pytest
+      CIBW_TEST_COMMAND: "python -m pytest --verbose {project}/test_snappy.py"
+      CIBW_BEFORE_ALL_LINUX: yum install -y snappy-devel
+      MACOSX_DEPLOYMENT_TARGET: "10.9"
+      CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"
+      CIBW_BEFORE_ALL: "bash {project}/build_snappy.sh"
+      CIBW_SKIP: ${{ matrix.skip }}
+      CIBW_ENVIRONMENT_WINDOWS: ${{ matrix.environment_windows }}
+      CIBW_ARCHS_LINUX: ${{ matrix.linux_archs }}
+      CIBW_ARCHS_MACOS: x86_64 universal2
+      CIBW_TEST_SKIP: "*_arm64 *_universal2:arm64"
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: "3.8"
+          architecture: ${{ matrix.architecture }}
+
+#      - name: Install Visual C++ for Python 2.7
+#        if: runner.os == 'Windows'
+#        run: |
+#          choco install vcpython27 -f -y
+
+
+      - name: Set up QEMU
+        if: runner.os == 'Linux'
+        uses: docker/setup-qemu-action@v1
+        with:
+          platforms: all
+        
+      - name: Add msbuild to PATH
+        if: runner.os == 'Windows'
+        uses: microsoft/setup-msbuild@v1.0.2
+
+      - name: delvewheel install
+        if: runner.os == 'Windows'
+        run: |
+          python -m pip install delvewheel==0.0.9
+
+      - name: Build wheels
+        uses: joerick/cibuildwheel@v1.9.0
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ./wheelhouse/*.whl
+          name: wheels
+
+  upload:
+    runs-on: ubuntu-latest
+    name: upload wheels
+    needs: ['sdist', 'build']
+    if: startsWith(github.ref, 'refs/tags/0.')
+    steps:
+      - name: Download test data
+        uses: actions/download-artifact@v1
+        with:
+          name: wheels
       - name: Publish wheels to PyPI
-        if: startsWith(github.ref, 'refs/tags/0.')
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
           TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
         run: |
-          twine upload dist/python_snappy*-manylinux1*.whl
+          twine upload dist/*.whl
