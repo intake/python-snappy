@@ -3,7 +3,7 @@ ALL_SUPPORTED_FORMATS - list of supported formats
 get_decompress_function - returns stream decompress function for a current
     format (specified or autodetected)
 get_compress_function - returns compress function for a current format
-    (specifed or default)
+    (specified or default)
 """
 from __future__ import absolute_import
 
