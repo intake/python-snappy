@@ -42,6 +42,10 @@ library_dirs, include_dirs = [], []
 if os.environ.get("CIBUILDWHEEL", False) and sys.version_info[:2] == (3, 9) and sys.platform =="darwin":
     library_dirs = ["/usr/local/lib/"]
     include_dirs = ["/usr/local/include/"]
+homebrew_prefix = os.environ.get("HOMEBREW_PREFIX")
+if homebrew_prefix:
+    library_dirs.append(os.path.join(homebrew_prefix, "lib"))
+    include_dirs.append(os.path.join(homebrew_prefix, "include"))
 
 
 snappymodule = Extension('snappy._snappy',
