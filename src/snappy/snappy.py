@@ -66,7 +66,7 @@ _COMPRESSION_THRESHOLD = .125
 
 def _masked_crc32c(data):
     # see the framing format specification
-    crc = _crc32c(data)
+    crc = _crc32c(bytes(data))
     return (((crc >> 15) | (crc << 17)) + 0xa282ead8) & 0xffffffff
 
 _compress = compress
