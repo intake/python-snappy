@@ -27,6 +27,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 #define PY_SSIZE_T_CLEAN
 #include "Python.h"
+#include "pythoncapi_compat.h"
 #include <string.h>
 #include <stdio.h>
 #include <snappy-c.h>
@@ -69,7 +70,7 @@ maybe_resize(PyObject *str, size_t expected_size, size_t actual_size)
 	        _PyBytes_Resize(&str, actual_size);
 	        return str;
 	    }
-	    Py_SIZE(str) = actual_size;
+	    Py_SET_SIZE(str, actual_size);
     }
     return str;
 }
