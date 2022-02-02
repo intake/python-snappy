@@ -138,3 +138,10 @@ Try this command if libstdc++ is deprecated
 ::
   
     $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib -stdlib=libc++ " pip install python-snappy
+    
+
+Or this command in Apple Silicon:
+
+::
+  
+    $ CPPFLAGS="-I/opt/homebrew/include -L/opt/homebrew/lib" pip install python-snappy 
