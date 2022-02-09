@@ -1,6 +1,10 @@
 name: PyPi wheel and sdist
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
 
 jobs:
   sdist:
@@ -14,7 +18,7 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: 3.9
+          python-version: "3.9"
           architecture: x64
 
       - name: Install test dependencies
@@ -50,7 +54,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-10.15, windows-2019]
+        os: [ubuntu-20.04, macos-11, windows-2019]
         architecture: ['x64']
         linux_archs: ["auto s390x"]
         include:
@@ -85,14 +89,8 @@ jobs:
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
-          python-version: "3.8"
+          python-version: "3.9"
           architecture: ${{ matrix.architecture }}
-
-#      - name: Install Visual C++ for Python 2.7
-#        if: runner.os == 'Windows'
-#        run: |
-#          choco install vcpython27 -f -y
-
 
       - name: Set up QEMU
         if: runner.os == 'Linux'
@@ -110,7 +108,7 @@ jobs:
           python -m pip install delvewheel==0.0.9
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v1.9.0
+        uses: joerick/cibuildwheel@v1.12.0
 
       - uses: actions/upload-artifact@v2
         with:
