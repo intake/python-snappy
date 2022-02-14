@@ -59,8 +59,8 @@ cffi_modules = []
 if 'PyPy' in sys.version:
     from setuptools import setup
     ext_modules = []
-    install_requires = ['cffi>=1.0.0']
-    setup_requires = ['cffi>=1.0.0']
+    install_requires = ['cffi>=1.15.0']
+    setup_requires = ['cffi>=1.15.0']
     cffi_modules = ['./src/snappy/snappy_cffi_builder.py:ffi']
 
 setup(
