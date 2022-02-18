@@ -19,7 +19,7 @@ Dependencies
 
 To use with pypy:
 
-* cffi >= 0.7
+* cffi >= 1.15.0
   http://cffi.readthedocs.org/
 
 * Supports Python 2.7 and Python 3
