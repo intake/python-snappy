@@ -31,7 +31,7 @@ except ImportError:
 
 import os
 
-version = '0.6.0'
+version = '0.6.1'
 long_description = """
 Python bindings for the snappy compression library from Google.
 
