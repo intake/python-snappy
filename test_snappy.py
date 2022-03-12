@@ -35,6 +35,15 @@ import struct
 from unittest import TestCase
 
 
+class SnappyModuleTest(TestCase):
+    def test_version(self):
+        assert tuple(map(int, snappy.__version__.split("."))) >= (0, 6, 1)
+        # Make sure that __version__ is identical to the version defined in setup.py
+        with open(os.path.join(os.path.dirname(__file__), "setup.py")) as f:
+            version_line, = (l for l in f.read().splitlines() if l.startswith("version"))
+        assert version_line.split("=")[1].strip(" '\"") == snappy.__version__
+
+
 class SnappyCompressionTest(TestCase):
     def test_simple_compress(self):
         text = "hello world!".encode('utf-8')
