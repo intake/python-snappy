@@ -33,7 +33,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <snappy-c.h>
 #include "crc32c.h"
 
-#define MODULE_VERSION "0.4.1"
 #define RESIZE_TOLERATION 0.75
 
 struct module_state {
@@ -305,10 +304,6 @@ init_snappy(void)
     PyModule_AddObject(m, "InvalidCompressedInputError",
         SnappyInvalidCompressedInputError);
     PyModule_AddObject(m, "CompressedLengthError", SnappyCompressedLengthError);
-
-    /* Version = MODULE_VERSION */
-    if (PyModule_AddStringConstant(m, "__version__", MODULE_VERSION))
-        INITERROR;
 
 #if PY_MAJOR_VERSION >= 3
     return m;
