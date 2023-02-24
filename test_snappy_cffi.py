@@ -1,9 +1,13 @@
 import sys
 
+import pytest
+pytest.importorskip("snappy.snappy_cffi")
+
 py3k = False
 if sys.hexversion > 0x02070000:
     unicode = str
     py3k = True
+
 
 def test_snappy_cffi_enum():
     from snappy.snappy_cffi import lib
