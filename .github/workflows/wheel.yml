@@ -108,7 +108,7 @@ jobs:
           python -m pip install delvewheel==0.0.9
 
       - name: Build wheels
-        uses: joerick/cibuildwheel@v2.1.3
+        uses: joerick/cibuildwheel
 
       - uses: actions/upload-artifact@v2
         with:
