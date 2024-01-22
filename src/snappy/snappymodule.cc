@@ -90,7 +90,7 @@ snappy_strerror(snappy_status status)
 }
 
 static PyObject *
-snappy__compress(PyObject *self, PyObject *args)
+snappy__compress(PyObject * /*self*/, PyObject *args)
 {
     Py_buffer input;
     size_t compressed_size, actual_size;
@@ -134,7 +134,7 @@ snappy__compress(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-snappy__uncompress(PyObject *self, PyObject *args)
+snappy__uncompress(PyObject * /*self*/, PyObject *args)
 {
     Py_buffer compressed;
     size_t uncomp_size, actual_size;
@@ -182,7 +182,7 @@ snappy__uncompress(PyObject *self, PyObject *args)
 
 
 static PyObject *
-snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
+snappy__is_valid_compressed_buffer(PyObject * /*self*/, PyObject *args)
 {
     const char * compressed;
     Py_ssize_t comp_size;
@@ -202,7 +202,7 @@ snappy__is_valid_compressed_buffer(PyObject *self, PyObject *args)
 }
 
 static PyObject *
-snappy__crc32c(PyObject *self, PyObject *args)
+snappy__crc32c(PyObject * /*self*/, PyObject *args)
 {
     Py_buffer input;
     PyObject * result;
