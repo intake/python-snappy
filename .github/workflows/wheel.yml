@@ -13,7 +13,7 @@ jobs:
     name: Python 3.11
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -84,7 +84,7 @@ jobs:
       CIBW_ARCHS_MACOS: x86_64 universal2
       CIBW_TEST_SKIP: "*_arm64 *_universal2:arm64"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
