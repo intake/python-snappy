@@ -38,30 +38,9 @@ Python bindings for the snappy compression library from Google.
 More details about Snappy library: http://google.github.io/snappy
 """
 
-library_dirs, include_dirs = [], []
-if os.environ.get("CIBUILDWHEEL", False) and sys.version_info[:2] == (3, 9) and sys.platform =="darwin":
-    library_dirs = ["/usr/local/lib/"]
-    include_dirs = ["/usr/local/include/"]
-
-
-snappymodule = Extension('snappy._snappy',
-                         libraries=['snappy'],
-                         sources=['src/snappy/snappymodule.cc', 'src/snappy/crc32c.c'],
-                         library_dirs=library_dirs,
-                         include_dirs=include_dirs)
-
-ext_modules = [snappymodule]
 packages = ['snappy']
-install_requires = []
-setup_requires = []
-cffi_modules = []
-
-if 'PyPy' in sys.version:
-    from setuptools import setup
-    ext_modules = []
-    install_requires = ['cffi>=1.15.0']
-    setup_requires = ['cffi>=1.15.0']
-    cffi_modules = ['./src/snappy/snappy_cffi_builder.py:ffi']
+install_requires = ['cramjam>=2.6.0', 'crc32c']
+setup_requires = ['cramjam>=2.6.0', 'crc32c']
 
 setup(
     name='python-snappy',
@@ -94,10 +73,8 @@ setup(
                  'Programming Language :: Python :: 3.10',
                  'Programming Language :: Python :: 3.11'
                  ],
-    ext_modules=ext_modules,
     packages=packages,
     install_requires=install_requires,
     setup_requires=setup_requires,
-    cffi_modules=cffi_modules,
     package_dir={'': 'src'},
 )

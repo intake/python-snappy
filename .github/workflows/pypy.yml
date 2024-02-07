@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["pypy2.7", "pypy3.9", "pypy3.10"]
+        python-version: [pypy3.9, "pypy3.10"]
 
     name: ${{ matrix.python-version }}
 
@@ -25,15 +25,12 @@ jobs:
           architecture: x64
 
       - name: Install test dependencies
-        run: pip install cffi flake8 pytest wheel
-
-      - name: Install libsnappy-dev
-        run: sudo apt-get install libsnappy-dev
+        run: pip install flake8 pytest wheel
 
       # Flake8 is already run in Source Distribution (sdist) workflow, so we don't run it here.
 
       - name: Install python-snappy from source
-        run: pip install -e .
+        run: python setup.py develop
 
       - name: Pytest
-        run: pytest --verbose test_snappy.py test_snappy_cffi.py
+        run: pytest --verbose test_snappy.py
