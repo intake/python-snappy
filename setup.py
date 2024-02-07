@@ -63,15 +63,12 @@ setup(
                  'Operating System :: MacOS :: MacOS X',
                  # 'Operating System :: Microsoft :: Windows', -- Not tested yet
                  'Operating System :: POSIX',
-                 'Programming Language :: Python :: 2.7',
                  'Programming Language :: Python :: 3',
-                 'Programming Language :: Python :: 3.5',
-                 'Programming Language :: Python :: 3.6',
-                 'Programming Language :: Python :: 3.7',
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
                  'Programming Language :: Python :: 3.10',
-                 'Programming Language :: Python :: 3.11'
+                 'Programming Language :: Python :: 3.11',
+                 'Programming Language :: Python :: 3.12',
                  ],
     packages=packages,
     install_requires=install_requires,
