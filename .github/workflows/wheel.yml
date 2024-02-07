@@ -10,15 +10,15 @@ jobs:
   sdist:
     runs-on: ubuntu-latest
 
-    name: Python 3.10
+    name: Python 3.11
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           architecture: x64
 
       - name: Install test dependencies
@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-11, windows-2019]
+        os: [ubuntu-20.04, macos-12, windows-2019]
         architecture: ['x64']
         linux_archs: ["auto s390x"]
         include:
@@ -81,12 +81,12 @@ jobs:
       CIBW_ARCHS_MACOS: x86_64 universal2
       CIBW_TEST_SKIP: "*_arm64 *_universal2:arm64"
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
       - name: Setup Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.10"
+          python-version: "3.11"
           architecture: ${{ matrix.architecture }}
 
       - name: Set up QEMU
