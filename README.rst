@@ -8,21 +8,11 @@ This library is distributed under the New BSD License
 Dependencies
 ============
 
-* snappy library >= 1.0.2 (or revision 27)
-  https://github.com/google/snappy
+* cramjam
 
-  You can install Snappy C library with following commands:
+* crc32c
 
-  - APT:  :code:`sudo apt-get install libsnappy-dev`
-  - RPM:  :code:`sudo yum install snappy-devel`
-  - Brew: :code:`brew install snappy`
-
-To use with pypy:
-
-* cffi >= 1.15.0
-  http://cffi.readthedocs.org/
-
-* Supports Python 2.7 and Python 3
+* Supports Python 3
 
 Build & Install
 ===============
