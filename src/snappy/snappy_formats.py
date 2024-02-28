@@ -9,15 +9,9 @@ from __future__ import absolute_import
 
 from .snappy import (
     stream_compress, stream_decompress, check_format, UncompressError)
-from .hadoop_snappy import (
-    stream_compress as hadoop_stream_compress,
-    stream_decompress as hadoop_stream_decompress,
-    check_format as hadoop_check_format)
 
 
 FRAMING_FORMAT = 'framing'
-
-HADOOP_FORMAT = 'hadoop_snappy'
 
 # Means format auto detection.
 # For compression will be used framing format.
@@ -27,16 +21,14 @@ FORMAT_AUTO = 'auto'
 
 DEFAULT_FORMAT = FORMAT_AUTO
 
-ALL_SUPPORTED_FORMATS = [FRAMING_FORMAT, HADOOP_FORMAT, FORMAT_AUTO]
+ALL_SUPPORTED_FORMATS = [FRAMING_FORMAT, FORMAT_AUTO]
 
 _COMPRESS_METHODS = {
     FRAMING_FORMAT: stream_compress,
-    HADOOP_FORMAT: hadoop_stream_compress,
 }
 
 _DECOMPRESS_METHODS = {
     FRAMING_FORMAT: stream_decompress,
-    HADOOP_FORMAT: hadoop_stream_decompress,
 }
 
 # We will use framing format as the default to compression.
@@ -47,13 +39,8 @@ _DEFAULT_COMPRESS_FORMAT = FRAMING_FORMAT
 # The tuple contains an ordered sequence of a format checking function and
 # a format-specific decompression function.
 # Framing format has it's header, that may be recognized.
-# Hadoop snappy format hasn't any special headers, it contains only
-# uncompressed block length integer and length of compressed subblock.
-# So we first check framing format and if it is not the case, then
-# check for snappy format.
 _DECOMPRESS_FORMAT_FUNCS = (
     (check_format, stream_decompress),
-    (hadoop_check_format, hadoop_stream_decompress),
 )
 
 
