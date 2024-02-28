@@ -39,15 +39,15 @@ More details about Snappy library: http://google.github.io/snappy
 """
 
 packages = ['snappy']
-install_requires = ['cramjam>=2.6.0', 'crc32c']
-setup_requires = ['cramjam>=2.6.0', 'crc32c']
+install_requires = ["cramjam"]
+setup_requires = ['cramjam>=2.6.0', 'google-crc32c']
 
 setup(
     name='python-snappy',
     version=version,
     author='Andres Moreira',
     author_email='andres@andresmoreira.com',
-    url='http://github.com/andrix/python-snappy',
+    url='http://github.com/intake/python-snappy',
     description='Python library for the snappy compression library from Google',
     long_description=long_description,
     keywords='snappy, compression, google',

@@ -12,9 +12,4 @@ from .snappy import (
     isValidCompressed,
 )
 
-from .hadoop_snappy import (
-    stream_compress as hadoop_stream_compress,
-    stream_decompress as hadoop_stream_decompress,
-)
-
 __version__ = '0.7.0'
