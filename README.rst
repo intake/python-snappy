@@ -10,27 +10,12 @@ Dependencies
 
 * cramjam
 
-* crc32c
+* Supports Python >=3.8
 
-* Supports Python 3
+Install
+=======
 
-Build & Install
-===============
-
-Build:
-
-::
-
-  python setup.py build
-
-Install:
-
-::
-
-  python setup.py install
-
-
-Or install it from PyPi:
+Install it from PyPi:
 
 ::
 
@@ -50,35 +35,7 @@ Run tests
 Benchmarks
 ==========
 
-*snappy vs. zlib*
-
-**Compressing:**
-
-::
-
-  %timeit zlib.compress("hola mundo cruel!")
-  100000 loops, best of 3: 9.64 us per loop
-
-  %timeit snappy.compress("hola mundo cruel!")
-  1000000 loops, best of 3: 849 ns per loop
-
-**Snappy** is **11 times faster** than zlib when compressing
-
-**Uncompressing:**
-
-::
-
-  r = snappy.compress("hola mundo cruel!")
-
-  %timeit snappy.uncompress(r)
-  1000000 loops, best of 3: 755 ns per loop
-
-  r = zlib.compress("hola mundo cruel!")
-
-  %timeit zlib.decompress(r)
-  1000000 loops, best of 3: 1.11 us per loop
-
-**Snappy** is **twice** as fast as zlib
+See ``cramjam`` for speed tests.
 
 Commandline usage
 =================
@@ -109,29 +66,3 @@ You can get help by running
 
 Snappy - compression library from Google (c)
  http://google.github.io/snappy
- 
-Frequently Asked Questions
-==========================
- 
-**How to install it on Mac OS X?**
-
-It has been reported a few times (Issue #7 and #23) that it can't be installed correctly the library in Mac. 
-The procedure should be,
-
-::
-
-    $ brew install snappy # snappy library from Google 
-    $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
-
-Try this command if libstdc++ is deprecated
-
-::
-  
-    $ CPPFLAGS="-I/usr/local/include -L/usr/local/lib -stdlib=libc++ " pip install python-snappy
-    
-
-Or this command in Apple Silicon:
-
-::
-  
-    $ CPPFLAGS="-I/opt/homebrew/include -L/opt/homebrew/lib" pip install python-snappy 

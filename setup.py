@@ -31,7 +31,7 @@ except ImportError:
 
 import os
 
-version = '0.7.0'
+version = '0.7.1'
 long_description = """
 Python bindings for the snappy compression library from Google.
 
@@ -40,7 +40,7 @@ More details about Snappy library: http://google.github.io/snappy
 
 packages = ['snappy']
 install_requires = ["cramjam"]
-setup_requires = ['cramjam>=2.6.0', 'google-crc32c']
+setup_requires = ['cramjam>=2.6.0']
 
 setup(
     name='python-snappy',
