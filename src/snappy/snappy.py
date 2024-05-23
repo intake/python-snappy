@@ -149,23 +149,15 @@ class StreamDecompressor():
         self.remains = None
     
     @staticmethod
-    def check_format(data):
-        """Checks that the given data starts with snappy framing format
-        stream identifier.
-        Raises UncompressError if it doesn't start with the identifier.
-        :return: None
+    def check_format(fin):
+        """Does this stream start with a stream header block?
+
+        True indicates that the stream can likely be decoded using this class.
         """
-        if len(data) < 6:
-            raise UncompressError("Too short data length")
-        chunk_type = struct.unpack("<L", data[:4])[0]
-        size = (chunk_type >> 8)
-        chunk_type &= 0xff
-        if (chunk_type != _IDENTIFIER_CHUNK or
-                size != len(_STREAM_IDENTIFIER)):
-            raise UncompressError("stream missing snappy identifier")
-        chunk = data[4:4 + size]
-        if chunk != _STREAM_IDENTIFIER:
-            raise UncompressError("stream has invalid snappy identifier")
+        try:
+            return fin.read(len(_STREAM_HEADER_BLOCK)) == _STREAM_HEADER_BLOCK
+        except:
+            return False
 
     def decompress(self, data: bytes):
         """Decompress 'data', returning a string containing the uncompressed
@@ -233,14 +225,21 @@ class HadoopStreamDecompressor():
         self.remains = b""
     
     @staticmethod
-    def check_format(data):
-        """Checks that there are enough bytes for a hadoop header
-        
-        We cannot actually determine if the data is really hadoop-snappy
+    def check_format(fin):
+        """Does this look like a hadoop snappy stream?
         """
-        if len(data) < 8:
-            raise UncompressError("Too short data length")
-        chunk_length = int.from_bytes(data[4:8], "big")
+        try:
+            from snappy.snappy_formats import check_unframed_format
+            size = fin.seek(0, 2)
+            fin.seek(0)
+            assert size >= 8
+
+            chunk_length = int.from_bytes(fin.read(4), "big")
+            assert chunk_length < size
+            fin.read(4)
+            return check_unframed_format(fin)
+        except:
+            return False
 
     def decompress(self, data: bytes):
         """Decompress 'data', returning a string containing the uncompressed
@@ -319,16 +318,43 @@ def stream_decompress(src,
     decompressor.flush()  # makes sure the stream ended well
 
 
-def check_format(fin=None, chunk=None,
-                 blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
-                 decompressor_cls=StreamDecompressor):
-    ok = True
-    if chunk is None:
-        chunk = fin.read(blocksize)
-        if not chunk:
-            raise UncompressError("Empty input stream")
-    try:
-        decompressor_cls.check_format(chunk)
-    except UncompressError as err:
-        ok = False
-    return ok, chunk
+def hadoop_stream_decompress(
+    src,
+    dst,
+    blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
+):
+    c = HadoopStreamDecompressor()
+    while True:
+        data = src.read(blocksize)
+        if not data:
+            break
+        buf = c.decompress(data)
+        if buf:
+            dst.write(buf)
+    dst.flush()
+
+
+def hadoop_stream_compress(
+    src,
+    dst,
+    blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
+):
+    c = HadoopStreamCompressor()
+    while True:
+        data = src.read(blocksize)
+        if not data:
+            break
+        buf = c.compress(data)
+        if buf:
+            dst.write(buf)
+    dst.flush()
+
+
+def raw_stream_decompress(src, dst):
+    data = src.read()
+    dst.write(decompress(data))
+
+
+def raw_stream_compress(src, dst):
+    data = src.read()
+    dst.write(compress(data))
