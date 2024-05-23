@@ -333,7 +333,7 @@ def hadoop_stream_decompress(
             break
         buf = c.decompress(data)
         if buf:
-            dst.write()
+            dst.write(buf)
     dst.flush()
 
 
@@ -349,7 +349,7 @@ def hadoop_stream_compress(
             break
         buf = c.compress(data)
         if buf:
-            dst.write()
+            dst.write(buf)
     dst.flush()
 
 

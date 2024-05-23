@@ -20,6 +20,7 @@ class TestFormatBase(TestCase):
         decompress_func = formats.get_decompress_function(
             self.decompress_format, compressed_stream
         )
+        compressed_stream.seek(0)
         decompressed_stream = io.BytesIO()
         decompress_func(
             compressed_stream,
@@ -44,6 +45,30 @@ class TestFormatFramingAuto(TestFormatBase):
 class TestFormatAutoFraming(TestFormatBase):
     compress_format = "auto"
     decompress_format = "framing"
+    success = True
+
+
+class TestFormatHadoop(TestFormatBase):
+    compress_format = "hadoop"
+    decompress_format = "hadoop"
+    success = True
+
+
+class TestFormatRaw(TestFormatBase):
+    compress_format = "raw"
+    decompress_format = "raw"
+    success = True
+
+
+class TestFormatHadoopAuto(TestFormatBase):
+    compress_format = "hadoop"
+    decompress_format = "auto"
+    success = True
+
+
+class TestFormatRawAuto(TestFormatBase):
+    compress_format = "raw"
+    decompress_format = "auto"
     success = True
 
 

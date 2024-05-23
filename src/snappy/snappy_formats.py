@@ -53,8 +53,9 @@ def uvarint(fin):
     return result
 
 
-def check_unframed_format(fin):
-    fin.seek(0)
+def check_unframed_format(fin, reset=False):
+    if reset:
+        fin.seek(0)
     try:
         size = uvarint(fin)
         assert size < 2**32 - 1
@@ -87,7 +88,7 @@ def guess_format_by_header(fin):
         form = "framed"
     elif HadoopStreamDecompressor.check_format(fin):
         form = "hadoop"
-    elif check_unframed_format(fin):
+    elif check_unframed_format(fin, reset=True):
         form = "raw"
     else:
         raise UncompressError("Can't detect format")
