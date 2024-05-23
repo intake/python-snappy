@@ -8,40 +8,73 @@ get_compress_function - returns compress function for a current format
 from __future__ import absolute_import
 
 from .snappy import (
-    stream_compress, stream_decompress, check_format, UncompressError)
+    HadoopStreamDecompressor, StreamDecompressor,
+    hadoop_stream_compress, hadoop_stream_decompress, raw_stream_compress,
+    raw_stream_decompress, stream_compress, stream_decompress,
+    UncompressError
+)
 
-
-FRAMING_FORMAT = 'framing'
 
 # Means format auto detection.
 # For compression will be used framing format.
 # In case of decompression will try to detect a format from the input stream
 # header.
-FORMAT_AUTO = 'auto'
+DEFAULT_FORMAT = "auto"
 
-DEFAULT_FORMAT = FORMAT_AUTO
-
-ALL_SUPPORTED_FORMATS = [FRAMING_FORMAT, FORMAT_AUTO]
+ALL_SUPPORTED_FORMATS = ["framing", "auto"]
 
 _COMPRESS_METHODS = {
-    FRAMING_FORMAT: stream_compress,
+    "framing": stream_compress,
+    "hadoop": hadoop_stream_compress,
+    "raw": raw_stream_compress
 }
 
 _DECOMPRESS_METHODS = {
-    FRAMING_FORMAT: stream_decompress,
+    "framing": stream_decompress,
+    "hadoop": hadoop_stream_decompress,
+    "raw": raw_stream_decompress
 }
 
 # We will use framing format as the default to compression.
 # And for decompression, if it's not defined explicitly, we will try to
 # guess the format from the file header.
-_DEFAULT_COMPRESS_FORMAT = FRAMING_FORMAT
+_DEFAULT_COMPRESS_FORMAT = "framing"
+
+
+def uvarint(fin):
+    result = 0
+    shift = 0
+    while True:
+        byte = fin.read(1)[0]
+        result |= (byte & 0x7F) << shift
+        if (byte & 0x80) == 0:
+            break
+        shift += 7
+    return result
+
+
+def check_unframed_format(fin):
+    fin.seek(0)
+    try:
+        size = uvarint(fin)
+        assert size < 2**32 - 1
+        next_byte = fin.read(1)[0]
+        end = fin.seek(0, 2)
+        assert size < end
+        assert next_byte & 0b11 == 0 # must start with literal block
+        return True
+    except:
+        return False
+
 
 # The tuple contains an ordered sequence of a format checking function and
 # a format-specific decompression function.
 # Framing format has it's header, that may be recognized.
-_DECOMPRESS_FORMAT_FUNCS = (
-    (check_format, stream_decompress),
-)
+_DECOMPRESS_FORMAT_FUNCS = {
+    "framed": stream_decompress,
+    "hadoop": hadoop_stream_decompress,
+    "raw": raw_stream_decompress
+}
 
 
 def guess_format_by_header(fin):
@@ -50,23 +83,25 @@ def guess_format_by_header(fin):
     :return: tuple of decompression method and a chunk that was taken from the
         input for format detection.
     """
-    chunk = None
-    for check_method, decompress_func in _DECOMPRESS_FORMAT_FUNCS:
-        ok, chunk = check_method(fin=fin, chunk=chunk)
-        if not ok:
-            continue
-        return decompress_func, chunk
-    raise UncompressError("Can't detect archive format")
+    if StreamDecompressor.check_format(fin):
+        form = "framed"
+    elif HadoopStreamDecompressor.check_format(fin):
+        form = "hadoop"
+    elif check_unframed_format(fin):
+        form = "raw"
+    else:
+        raise UncompressError("Can't detect format")
+    return form, _DECOMPRESS_FORMAT_FUNCS[form]
 
 
 def get_decompress_function(specified_format, fin):
-    if specified_format == FORMAT_AUTO:
+    if specified_format == "auto":
         decompress_func, read_chunk = guess_format_by_header(fin)
         return decompress_func, read_chunk
     return _DECOMPRESS_METHODS[specified_format], None
 
 
 def get_compress_function(specified_format):
-    if specified_format == FORMAT_AUTO:
+    if specified_format == "auto":
         return _COMPRESS_METHODS[_DEFAULT_COMPRESS_FORMAT]
     return _COMPRESS_METHODS[specified_format]
