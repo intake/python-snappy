@@ -96,9 +96,9 @@ def guess_format_by_header(fin):
 
 def get_decompress_function(specified_format, fin):
     if specified_format == "auto":
-        decompress_func, read_chunk = guess_format_by_header(fin)
-        return decompress_func, read_chunk
-    return _DECOMPRESS_METHODS[specified_format], None
+        format, decompress_func = guess_format_by_header(fin)
+        return decompress_func
+    return _DECOMPRESS_METHODS[specified_format]
 
 
 def get_compress_function(specified_format):
