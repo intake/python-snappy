@@ -9,6 +9,8 @@ from .snappy import (
     StreamCompressor,
     StreamDecompressor,
     UncompressError,
+    HadoopStreamCompressor,
+    HadoopStreamDecompressor,
     isValidCompressed,
 )
 
