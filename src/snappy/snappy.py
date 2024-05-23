@@ -150,10 +150,9 @@ class StreamDecompressor():
     
     @staticmethod
     def check_format(fin):
-        """Checks that the given data starts with snappy framing format
-        stream identifier.
-        Raises UncompressError if it doesn't start with the identifier.
-        :return: None
+        """Does this stream start with a stream header block?
+
+        True indicates that the stream can likely be decoded using this class.
         """
         try:
             return fin.read(len(_STREAM_HEADER_BLOCK)) == _STREAM_HEADER_BLOCK
@@ -227,9 +226,7 @@ class HadoopStreamDecompressor():
     
     @staticmethod
     def check_format(fin):
-        """Checks that there are enough bytes for a hadoop header
-        
-        We cannot actually determine if the data is really hadoop-snappy
+        """Does this look like a hadoop snappy stream?
         """
         try:
             from snappy.snappy_formats import check_unframed_format

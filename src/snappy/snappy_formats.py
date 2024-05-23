@@ -42,6 +42,7 @@ _DEFAULT_COMPRESS_FORMAT = "framing"
 
 
 def uvarint(fin):
+    """Read uint64 nbumber from varint encoding in a stream"""
     result = 0
     shift = 0
     while True:
@@ -54,6 +55,11 @@ def uvarint(fin):
 
 
 def check_unframed_format(fin, reset=False):
+    """Can this be read using the raw codec
+
+    This function wil return True for all snappy raw streams, but
+    True does not mean that we can necessarily decode the stream.
+    """
     if reset:
         fin.seek(0)
     try:
@@ -81,8 +87,8 @@ _DECOMPRESS_FORMAT_FUNCS = {
 def guess_format_by_header(fin):
     """Tries to guess a compression format for the given input file by it's
     header.
-    :return: tuple of decompression method and a chunk that was taken from the
-        input for format detection.
+
+    :return: format name (str), stream decompress function (callable)
     """
     if StreamDecompressor.check_format(fin):
         form = "framed"
