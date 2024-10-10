@@ -31,7 +31,6 @@ import platform
 import sys
 import random
 import snappy
-import struct
 from unittest import TestCase
 
 

@@ -41,8 +41,6 @@ Expected usage like:
 """
 from __future__ import absolute_import
 
-import struct
-
 import cramjam
 
 _CHUNK_MAX = 65536
