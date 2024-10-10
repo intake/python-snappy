@@ -31,7 +31,6 @@ import platform
 import sys
 import random
 import snappy
-import struct
 from unittest import TestCase
 
 
@@ -69,12 +68,6 @@ class SnappyCompressionTest(TestCase):
     def test_uncompress_error(self):
         self.assertRaises(snappy.UncompressError, snappy.uncompress,
                           "hoa".encode('utf-8'))
-
-    if sys.version_info[0] == 2:
-        def test_unicode_compress(self):
-            text = "hello unicode world!".decode('utf-8')
-            compressed = snappy.compress(text)
-            self.assertEqual(text, snappy.uncompress(compressed))
 
     def test_decompress(self):
         # decompress == uncompress, just to support compatibility with zlib

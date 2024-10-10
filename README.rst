@@ -3,7 +3,7 @@ python-snappy
 
 Python library for the snappy compression library from Google.
 This library is distributed under the New BSD License
-(http://www.opensource.org/licenses/bsd-license.php).
+(https://opensource.org/license/bsd-3-clause).
 
 Dependencies
 ============
@@ -15,7 +15,7 @@ Dependencies
 Install
 =======
 
-Install it from PyPi:
+Install it from PyPI:
 
 ::
 
@@ -65,4 +65,4 @@ You can get help by running
 
 
 Snappy - compression library from Google (c)
- http://google.github.io/snappy
+ https://google.github.io/snappy
