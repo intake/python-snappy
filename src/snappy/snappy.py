@@ -39,7 +39,11 @@ Expected usage like:
     assert "some data" == snappy.uncompress(compressed)
 
 """
-from __future__ import absolute_import
+from __future__ import absolute_import, annotations
+
+from typing import (
+    Optional, Union, IO, BinaryIO, Protocol, Type, Any, overload,
+)
 
 import cramjam
 
@@ -57,7 +61,7 @@ class UncompressError(Exception):
     pass
 
 
-def isValidCompressed(data):
+def isValidCompressed(data: Union[str, bytes]) -> bool:
     if isinstance(data, str):
         data = data.encode('utf-8')
 
@@ -69,11 +73,17 @@ def isValidCompressed(data):
     return ok
 
 
-def compress(data, encoding='utf-8'):
+def compress(data: Union[str, bytes], encoding: str = 'utf-8') -> bytes:
     if isinstance(data, str):
         data = data.encode(encoding)
 
     return bytes(_compress(data))
+
+@overload
+def uncompress(data: bytes) -> bytes: ...
+
+@overload
+def uncompress(data: bytes, decoding: Optional[str] = None) -> Union[str, bytes]: ...
 
 def uncompress(data, decoding=None):
     if isinstance(data, str):
@@ -88,6 +98,16 @@ def uncompress(data, decoding=None):
 
 
 decompress = uncompress
+
+
+class Compressor(Protocol):
+    def add_chunk(self, data) -> Any: ...
+
+
+class Decompressor(Protocol):
+    def decompress(self, data) -> Any: ...
+    def flush(self): ...
+
 
 class StreamCompressor():
 
@@ -109,7 +129,7 @@ class StreamCompressor():
     def __init__(self):
         self.c = cramjam.snappy.Compressor()
 
-    def add_chunk(self, data: bytes, compress=None):
+    def add_chunk(self, data: bytes, compress=None) -> bytes:
         """Add a chunk, returning a string that is framed and compressed. 
         
         Outputs a single snappy chunk; if it is the very start of the stream,
@@ -120,10 +140,10 @@ class StreamCompressor():
 
     compress = add_chunk
 
-    def flush(self):
+    def flush(self) -> bytes:
         return bytes(self.c.flush())
 
-    def copy(self):
+    def copy(self) -> 'StreamCompressor':
         """This method exists for compatibility with the zlib compressobj.
         """
         return self
@@ -157,7 +177,7 @@ class StreamDecompressor():
         except:
             return False
 
-    def decompress(self, data: bytes):
+    def decompress(self, data: bytes) -> bytes:
         """Decompress 'data', returning a string containing the uncompressed
         data corresponding to at least part of the data in string. This data
         should be concatenated to the output produced by any preceding calls to
@@ -189,15 +209,15 @@ class StreamDecompressor():
         self.c.decompress(data)
         return self.flush()
 
-    def flush(self):
+    def flush(self) -> bytes:
         return bytes(self.c.flush())
 
-    def copy(self):
+    def copy(self) -> 'StreamDecompressor':
         return self
 
 
 class HadoopStreamCompressor():
-    def add_chunk(self, data: bytes, compress=None):
+    def add_chunk(self, data: bytes, compress=None) -> bytes:
         """Add a chunk, returning a string that is framed and compressed. 
         
         Outputs a single snappy chunk; if it is the very start of the stream,
@@ -208,11 +228,11 @@ class HadoopStreamCompressor():
 
     compress = add_chunk
 
-    def flush(self):
+    def flush(self) -> bytes:
         # never maintains a buffer
         return b""
 
-    def copy(self):
+    def copy(self) -> 'HadoopStreamCompressor':
         """This method exists for compatibility with the zlib compressobj.
         """
         return self
@@ -239,7 +259,7 @@ class HadoopStreamDecompressor():
         except:
             return False
 
-    def decompress(self, data: bytes):
+    def decompress(self, data: bytes) -> bytes:
         """Decompress 'data', returning a string containing the uncompressed
         data corresponding to at least part of the data in string. This data
         should be concatenated to the output produced by any preceding calls to
@@ -262,18 +282,18 @@ class HadoopStreamDecompressor():
             data = data[8 + chunk_length:]
         return b"".join(out)
 
-    def flush(self):
+    def flush(self) -> bytes:
         return b""
 
-    def copy(self):
+    def copy(self) -> 'HadoopStreamDecompressor':
         return self
         
 
 
-def stream_compress(src,
-                    dst,
-                    blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
-                    compressor_cls=StreamCompressor):
+def stream_compress(src: IO,
+                    dst: IO,
+                    blocksize: int = _STREAM_TO_STREAM_BLOCK_SIZE,
+                    compressor_cls: Type[Compressor] = StreamCompressor) -> None:
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, compresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
@@ -288,11 +308,11 @@ def stream_compress(src,
         if buf: dst.write(buf)
 
 
-def stream_decompress(src,
-                      dst,
-                      blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
-                      decompressor_cls=StreamDecompressor,
-                      start_chunk=None):
+def stream_decompress(src: IO,
+                      dst: IO,
+                      blocksize: int = _STREAM_TO_STREAM_BLOCK_SIZE,
+                      decompressor_cls: Type[Decompressor] = StreamDecompressor,
+                      start_chunk=None) -> None:
     """Takes an incoming file-like object and an outgoing file-like object,
     reads data from src, decompresses it, and writes it to dst. 'src' should
     support the read method, and 'dst' should support the write method.
@@ -317,10 +337,10 @@ def stream_decompress(src,
 
 
 def hadoop_stream_decompress(
-    src,
-    dst,
-    blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
-):
+    src: BinaryIO,
+    dst: BinaryIO,
+    blocksize: int = _STREAM_TO_STREAM_BLOCK_SIZE,
+) -> None:
     c = HadoopStreamDecompressor()
     while True:
         data = src.read(blocksize)
@@ -333,10 +353,10 @@ def hadoop_stream_decompress(
 
 
 def hadoop_stream_compress(
-    src,
-    dst,
-    blocksize=_STREAM_TO_STREAM_BLOCK_SIZE,
-):
+    src: BinaryIO,
+    dst: BinaryIO,
+    blocksize: int = _STREAM_TO_STREAM_BLOCK_SIZE,
+) -> None:
     c = HadoopStreamCompressor()
     while True:
         data = src.read(blocksize)
@@ -348,11 +368,11 @@ def hadoop_stream_compress(
     dst.flush()
 
 
-def raw_stream_decompress(src, dst):
+def raw_stream_decompress(src: BinaryIO, dst: BinaryIO) -> None:
     data = src.read()
     dst.write(decompress(data))
 
 
-def raw_stream_compress(src, dst):
+def raw_stream_compress(src: BinaryIO, dst: BinaryIO) -> None:
     data = src.read()
     dst.write(compress(data))

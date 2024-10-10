@@ -63,6 +63,7 @@ setup(
                  'Operating System :: MacOS :: MacOS X',
                  # 'Operating System :: Microsoft :: Windows', -- Not tested yet
                  'Operating System :: POSIX',
+                 'Typing :: Typed',
                  'Programming Language :: Python :: 3',
                  'Programming Language :: Python :: 3.8',
                  'Programming Language :: Python :: 3.9',
@@ -75,4 +76,5 @@ setup(
     install_requires=install_requires,
     setup_requires=setup_requires,
     package_dir={'': 'src'},
+    package_data={'snappy': ['py.typed']}
 )
