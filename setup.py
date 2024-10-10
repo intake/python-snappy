@@ -35,7 +35,7 @@ version = '0.7.1'
 long_description = """
 Python bindings for the snappy compression library from Google.
 
-More details about Snappy library: http://google.github.io/snappy
+More details about Snappy library: https://google.github.io/snappy
 """
 
 packages = ['snappy']
@@ -47,7 +47,7 @@ setup(
     version=version,
     author='Andres Moreira',
     author_email='andres@andresmoreira.com',
-    url='http://github.com/intake/python-snappy',
+    url='https://github.com/intake/python-snappy',
     description='Python library for the snappy compression library from Google',
     long_description=long_description,
     keywords='snappy, compression, google',

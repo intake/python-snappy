@@ -65,4 +65,4 @@ You can get help by running
 
 
 Snappy - compression library from Google (c)
- http://google.github.io/snappy
+ https://google.github.io/snappy
