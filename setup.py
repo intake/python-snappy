@@ -71,6 +71,7 @@ setup(
                  'Programming Language :: Python :: 3.12',
                  ],
     packages=packages,
+    python_requires=">=3.8",
     install_requires=install_requires,
     setup_requires=setup_requires,
     package_dir={'': 'src'},
