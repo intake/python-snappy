@@ -15,7 +15,7 @@ Dependencies
 Install
 =======
 
-Install it from PyPi:
+Install it from PyPI:
 
 ::
 
