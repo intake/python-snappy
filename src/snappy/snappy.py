@@ -41,8 +41,6 @@ Expected usage like:
 """
 from __future__ import absolute_import
 
-import struct
-
 import cramjam
 
 _CHUNK_MAX = 65536
@@ -300,8 +298,8 @@ def stream_decompress(src,
     support the read method, and 'dst' should support the write method.
 
     The default blocksize is good for almost every scenario.
-    :param decompressor_cls: class that implements `decompress` method like
-        StreamDecompressor in the module
+    :param decompressor_cls: class that implements `decompress` and
+        `flush` methods like StreamDecompressor in the module
     :param start_chunk: start block of data that have already been read from
         the input stream (to detect the format, for example)
     """
