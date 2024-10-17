@@ -43,7 +43,7 @@ jobs:
       - name: Archive sdist
         uses: actions/upload-artifact@v4
         with:
-          name: wheels
+          name: wheels ${{ matrix.os }}-${{ matrix.architecture }}
           path: dist/python-snappy*.tar.gz
 
   build:
@@ -111,7 +111,7 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           path: ./wheelhouse/*.whl
-          name: wheels
+          name: wheels ${{ matrix.os }}-${{ matrix.architecture }}
 
   upload:
     runs-on: ubuntu-latest
@@ -122,7 +122,7 @@ jobs:
       - name: Download test data
         uses: actions/download-artifact@v4.1.7
         with:
-          name: wheels
+          name: wheels ${{ matrix.os }}-${{ matrix.architecture }}
       - name: Publish wheels to PyPI
         env:
           TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
