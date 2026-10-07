@@ -1,7 +1,9 @@
 import io
 import os
 from unittest import TestCase
-
+import subprocess
+import sys
+import tempfile
 from snappy import snappy_formats as formats
 
 
@@ -91,6 +93,38 @@ class TestDecompressFunction(TestCase):
         decompress_func(compressed, decompressed)
 
         self.assertEqual(data, decompressed.getvalue())
+
+    def test_cli_decompress(self):
+        data = b"hello world"
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            compressed = os.path.join(tmpdir, "input.snappy")
+            output = os.path.join(tmpdir, "output.txt")
+
+            with open(compressed, "wb") as f:
+                formats.get_compress_function("auto")(
+                    io.BytesIO(data),
+                    f
+                )
+
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    "-m",
+                    "snappy",
+                    "-d",
+                    compressed,
+                    output,
+                ],
+                capture_output=True,
+                text=True,
+            )
+
+            self.assertEqual(result.returncode, 0)
+
+            with open(output, "rb") as f:
+                self.assertEqual(data, f.read())
+
 
 if __name__ == "__main__":
     import unittest
