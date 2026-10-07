@@ -71,6 +71,26 @@ class TestFormatRawAuto(TestFormatBase):
     decompress_format = "auto"
     success = True
 
+class TestDecompressFunction(TestCase):
+    def test_auto_returns_function(self):
+        data = b"hello world"
+
+        compressed = io.BytesIO()
+        formats.get_compress_function("auto")(
+            io.BytesIO(data),
+            compressed
+        )
+        compressed.seek(0)
+
+        decompress_func = formats.get_decompress_function(
+            "auto",
+            compressed
+        )
+
+        decompressed = io.BytesIO()
+        decompress_func(compressed, decompressed)
+
+        self.assertEqual(data, decompressed.getvalue())
 
 if __name__ == "__main__":
     import unittest
