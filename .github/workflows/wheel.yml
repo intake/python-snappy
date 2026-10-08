@@ -35,7 +35,7 @@ jobs:
         run: python setup.py sdist
 
       - name: Install python-snappy sdist
-        run: pip install dist/python-snappy*.tar.gz
+        run: pip install dist/python_snappy*.tar.gz
 
       - name: Pytest
         run: pytest --verbose test_snappy.py
@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: wheels
-          path: dist/python-snappy*.tar.gz
+          path: dist/python_snappy*.tar.gz
 
   build:
     runs-on: ${{ matrix.os }}
