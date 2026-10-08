@@ -1,5 +1,8 @@
 import io
 import os
+import subprocess
+import sys
+import tempfile
 from unittest import TestCase
 
 from snappy import snappy_formats as formats
@@ -70,6 +73,30 @@ class TestFormatRawAuto(TestFormatBase):
     compress_format = "raw"
     decompress_format = "auto"
     success = True
+
+
+class TestCommandLine(TestCase):
+    def test_compress_decompress_roundtrip(self):
+        data = os.urandom(1024 * 256 * 2) + os.urandom(13245 * 2)
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            plain = os.path.join(tmp_dir, "plain")
+            compressed = os.path.join(tmp_dir, "compressed.snappy")
+            with open(plain, "wb") as f:
+                f.write(data)
+            subprocess.run(
+                [sys.executable, "-m", "snappy", "-c", plain, compressed],
+                check=True,
+            )
+            for target_format in formats.ALL_SUPPORTED_FORMATS:
+                with self.subTest(target_format=target_format):
+                    decompressed = os.path.join(tmp_dir, target_format)
+                    subprocess.run(
+                        [sys.executable, "-m", "snappy", "-d",
+                         "-t", target_format, compressed, decompressed],
+                        check=True,
+                    )
+                    with open(decompressed, "rb") as f:
+                        self.assertEqual(data, f.read())
 
 
 if __name__ == "__main__":

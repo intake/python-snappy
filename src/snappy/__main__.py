@@ -71,20 +71,21 @@ def cmdline_main():
     if isinstance(args.outfile, io.TextIOWrapper):
         args.outfile = stdout
 
-    additional_args = {}
     if args.compress:
         method = formats.get_compress_function(args.target_format)
     else:
         try:
-            method, read_chunk = formats.get_decompress_function(
+            method = formats.get_decompress_function(
                 args.target_format,
                 args.infile
             )
         except UncompressError as err:
             sys.exit("Failed to get decompress function: {}".format(err))
-        additional_args['start_chunk'] = read_chunk
+        if args.target_format == "auto":
+            # guessing the format reads from the input, so rewind it
+            args.infile.seek(0)
 
-    method(args.infile, args.outfile, **additional_args)
+    method(args.infile, args.outfile)
 
 
 if __name__ == "__main__":
