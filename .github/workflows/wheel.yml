@@ -51,19 +51,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04, macos-12, windows-2019]
+        os: [ubuntu-22.04, macos-14, windows-2022]
         architecture: ["x64"]
         linux_archs: ["auto s390x"]
         include:
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x86"
             skip: "*2*win* *win_amd64"
             environment_windows: INCLUDE="C:/Program Files (x86)/Snappy/include" LIB="C:/Program Files (x86)/Snappy/lib"
-          - os: windows-2019
+          - os: windows-2022
             architecture: "x64"
             skip: "*2*win* *win32"
             environment_windows: INCLUDE="C:/Program Files/Snappy/include" LIB="C:/Program Files/Snappy/lib"
-          - os: ubuntu-20.04
+          - os: ubuntu-22.04
             architecture: "x64"
             linux_archs: aarch64 ppc64le
 
