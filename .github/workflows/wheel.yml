@@ -38,7 +38,7 @@ jobs:
         run: pip install dist/python-snappy*.tar.gz
 
       - name: Pytest
-        run: pytest --verbose test_snappy.py
+        run: pytest --verbose test_snappy.py test_formats.py
 
       - name: Archive sdist
         uses: actions/upload-artifact@v4
