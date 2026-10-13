@@ -76,13 +76,12 @@ def cmdline_main():
         method = formats.get_compress_function(args.target_format)
     else:
         try:
-            method, read_chunk = formats.get_decompress_function(
+            method = formats.get_decompress_function(
                 args.target_format,
                 args.infile
             )
         except UncompressError as err:
             sys.exit("Failed to get decompress function: {}".format(err))
-        additional_args['start_chunk'] = read_chunk
 
     method(args.infile, args.outfile, **additional_args)
 
