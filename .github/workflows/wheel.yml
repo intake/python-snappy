@@ -38,7 +38,7 @@ jobs:
         run: pip install dist/python_snappy*.tar.gz
 
       - name: Pytest
-        run: pytest --verbose test_snappy.py
+        run: pytest --verbose test_snappy.py test_formats.py
 
       - name: Archive sdist
         uses: actions/upload-artifact@v4
@@ -51,7 +51,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-22.04, macos-14, windows-2022]
+        os: [ubuntu-22.04, macos-15-intel, windows-2022]
         architecture: ["x64"]
         linux_archs: ["auto s390x"]
         include:
@@ -70,7 +70,7 @@ jobs:
     name: Python ${{ matrix.os }}
     env:
       CIBW_TEST_REQUIRES: pytest
-      CIBW_TEST_COMMAND: "python -m pytest --verbose {project}/test_snappy.py"
+      CIBW_TEST_COMMAND: "python -m pytest --verbose {project}/test_snappy.py {project}/test_formats.py"
       CIBW_BEFORE_ALL_LINUX: yum install -y snappy-devel
       MACOSX_DEPLOYMENT_TARGET: "10.9"
       CIBW_REPAIR_WHEEL_COMMAND_WINDOWS: "delvewheel repair -w {dest_dir} {wheel}"

@@ -73,6 +73,50 @@ class TestFormatRawAuto(TestFormatBase):
     decompress_format = "auto"
     success = True
 
+class TestAutoDecompress(TestCase):
+    data = bytes(range(256))
+
+    def compressed(self, name):
+        stream = io.BytesIO()
+        formats.get_compress_function(name)(io.BytesIO(self.data), stream)
+        stream.seek(0)
+        return stream
+
+    def test_seekable_formats(self):
+        for name in ("hadoop", "raw"):
+            with self.subTest(format=name):
+                compressed = self.compressed(name)
+                decompress = formats.get_decompress_function("auto", compressed)
+                output = io.BytesIO()
+                decompress(compressed, output)
+                self.assertEqual(output.getvalue(), self.data)
+
+    def test_cli_seekable_formats(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            source = os.path.join(tmpdir, "input.snappy")
+            target = os.path.join(tmpdir, "output.bin")
+            for name in ("hadoop", "raw"):
+                with self.subTest(format=name):
+                    with open(source, "wb") as stream:
+                        stream.write(self.compressed(name).getvalue())
+                    result = subprocess.run(
+                        [sys.executable, "-m", "snappy", "-d", source, target],
+                        capture_output=True,
+                    )
+                    self.assertEqual(result.returncode, 0, result.stderr)
+                    with open(target, "rb") as stream:
+                        self.assertEqual(stream.read(), self.data)
+
+    def test_cli_framed_stdin(self):
+        result = subprocess.run(
+            [sys.executable, "-m", "snappy", "-d"],
+            input=self.compressed("framing").getvalue(),
+            capture_output=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(result.stdout, self.data)
+
+
 class TestDecompressFunction(TestCase):
     def test_auto_returns_function(self):
         data = b"hello world"

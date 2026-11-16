@@ -33,4 +33,4 @@ jobs:
         run: python setup.py develop
 
       - name: Pytest
-        run: pytest --verbose test_snappy.py
+        run: pytest --verbose test_snappy.py test_formats.py

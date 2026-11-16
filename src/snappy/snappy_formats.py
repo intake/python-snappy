@@ -104,6 +104,9 @@ def guess_format_by_header(fin):
 def get_decompress_function(specified_format, fin):
     if specified_format == "auto":
         format, decompress_func = guess_format_by_header(fin)
+        if format in ("hadoop", "raw"):
+            # These probes seek to EOF; the decoder needs the complete stream.
+            fin.seek(0)
         return decompress_func
     return _DECOMPRESS_METHODS[specified_format]
 
